@@ -10,9 +10,13 @@ It allows travelers to create customized itineraries, manage destinations and ac
 🔗 Project Links :
 
 🌐 Live Project: https://globetrotter1-kappa.vercel.app/
+
 💻 GitHub Repository: https://github.com/prtspndy/GlobeTrotter
+
 📄 Project Documentation: https://drive.google.com/file/d/1YQrrHda01JDDPAFVZqlq8hNoSbCO4XQH/view?usp=sharing
+
 🎞️ Project Presentation: https://drive.google.com/file/d/1fIUUQwjfTTtcmx2DnytH89_6pMEUyPOk/view?usp=sharing
+
 🎥 Demo Video: https://youtu.be/QE_F3dc9Q6M
 
 ## 🚀 Overview
