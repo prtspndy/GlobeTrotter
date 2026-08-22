@@ -94,7 +94,7 @@ export default function CityDiscoveryPage() {
           {/* Quick Search Chips */}
           <div className="flex flex-wrap justify-center items-center gap-2 pt-2 text-xs">
             <span className="text-secondary font-semibold uppercase tracking-wider text-[10px]">Popular:</span>
-            {['Rome', 'Paris', 'Tokyo', 'Dubai', 'Kyoto', 'Berlin'].map((cityName) => (
+            {['Jaipur', 'Varanasi', 'Goa', 'Leh', 'Munnar', 'Mumbai', 'Delhi', 'Agra'].map((cityName) => (
               <button
                 key={cityName}
                 onClick={() => setSearchQuery(cityName)}
@@ -120,9 +120,9 @@ export default function CityDiscoveryPage() {
               className="bg-surface border border-outline-variant rounded-sm text-xs px-3 py-1.5 text-on-surface"
             >
               <option value="All">All Costs</option>
-              <option value="Low">Low Cost</option>
-              <option value="Moderate">Moderate Cost</option>
-              <option value="High">High Cost</option>
+              <option value="budget">Budget</option>
+              <option value="moderate">Moderate Cost</option>
+              <option value="luxury">Luxury</option>
             </select>
 
             <select
@@ -131,9 +131,11 @@ export default function CityDiscoveryPage() {
               className="bg-surface border border-outline-variant rounded-sm text-xs px-3 py-1.5 text-on-surface"
             >
               <option value="All">All Regions</option>
-              <option value="Europe">Europe</option>
-              <option value="Asia">Asia</option>
-              <option value="Middle East">Middle East</option>
+              <option value="North India">North India</option>
+              <option value="South India">South India</option>
+              <option value="West India">West India</option>
+              <option value="East India">East India</option>
+              <option value="Himalayas">Himalayas</option>
             </select>
           </div>
 
