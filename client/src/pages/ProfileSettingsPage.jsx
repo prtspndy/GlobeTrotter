@@ -1,154 +1,148 @@
 import React, { useState } from 'react';
-import { User, Mail, Shield, Check, Globe, DollarSign, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTrip } from '../context/TripContext';
 import { MOCK_CITIES } from '../data/mockData';
 
 export default function ProfileSettingsPage() {
-  const { user, updateProfile } = useAuth();
+  const { user } = useAuth();
+  const { trips } = useTrip();
 
-  const [name, setName] = useState(user?.name || 'Alexandra Vance');
-  const [email, setEmail] = useState(user?.email || 'alexandra.vance@globetrotter.com');
-  const [currency, setCurrency] = useState(user?.preferences?.preferredCurrency || 'USD');
-  const [saved, setSaved] = useState(false);
+  const [name, setName] = useState(user?.name || 'Prashant Sharma');
+  const [email, setEmail] = useState(user?.email || 'prashant@example.com');
+  const [savedSuccess, setSavedSuccess] = useState(false);
 
-  const handleSubmit = (e) => {
+  const totalStops = trips.reduce((acc, t) => acc + (t.stops?.length || 0), 0);
+  const totalActivities = trips.reduce((acc, t) => {
+    return acc + (t.stops?.reduce((sAcc, s) => sAcc + (s.activities?.length || 0), 0) || 0);
+  }, 0);
+
+  const handleSave = (e) => {
     e.preventDefault();
-    updateProfile({
-      name,
-      email,
-      preferences: {
-        ...user?.preferences,
-        preferredCurrency: currency
-      }
-    });
-
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 2500);
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="w-full bg-surface pb-24">
       
-      {/* Header */}
-      <div className="border-b border-outline-variant/60 pb-6">
-        <span className="text-xs font-semibold uppercase tracking-widest text-primary block">
-          Traveler Account
-        </span>
-        <h1 className="font-serif text-3xl font-bold text-on-surface">
-          Profile & Preferences Settings
-        </h1>
-      </div>
-
-      {saved && (
-        <div className="p-3 bg-surface-container border border-primary text-primary rounded-sm flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider">
-          <Check className="w-4 h-4" />
-          <span>Profile configuration updated successfully.</span>
-        </div>
-      )}
-
-      {/* Main Settings Form */}
-      <form onSubmit={handleSubmit} className="bg-surface border border-outline/40 shadow-2xl p-8 sm:p-10 space-y-8 rounded-sm">
+      <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-12 space-y-12">
         
-        {/* Avatar & Bio */}
-        <div className="flex items-center space-x-6 border-b border-outline-variant/60 pb-6">
-          <img
-            src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"}
-            alt={user?.name}
-            className="w-20 h-20 object-cover border-2 border-primary rounded-sm shadow-paper"
-          />
-          <div>
-            <h3 className="font-serif text-xl font-bold text-on-surface">{user?.name}</h3>
-            <span className="text-xs text-outline block">{user?.email}</span>
-            <span className="inline-block mt-2 px-2.5 py-0.5 text-[10px] uppercase font-bold bg-primary/10 text-primary border border-primary/30 rounded-sm">
-              Broadsheet Pro Traveler
-            </span>
-          </div>
-        </div>
+        <header className="border-b border-outline-variant pb-6">
+          <h1 className="font-serif text-4xl md:text-6xl font-bold text-on-surface">Profile & Settings</h1>
+          <p className="text-xs text-secondary mt-2">Manage your traveler account, preferences, and security settings.</p>
+        </header>
 
-        {/* User Info Fields */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-1.5">
-              Full Name
-            </label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-sm bg-surface-container-low border border-outline/50 rounded-sm text-on-surface focus:outline-none focus:border-primary"
-            />
+        {/* Profile Hero Section */}
+        <section className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center bg-surface border border-outline-variant p-8 rounded-sm shadow-paper">
+          
+          {/* Avatar & Details */}
+          <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left space-y-4">
+            <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-primary shadow-sm">
+              <img
+                src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80"}
+                alt={name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div>
+              <h2 className="font-serif text-2xl font-bold text-on-surface">{name}</h2>
+              <p className="text-xs text-secondary">{email}</p>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-1.5">
-              Email Address
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-sm bg-surface-container-low border border-outline/50 rounded-sm text-on-surface focus:outline-none focus:border-primary"
-            />
+          {/* Travel Stats Bar */}
+          <div className="md:col-span-8 grid grid-cols-3 gap-6 border-t md:border-t-0 md:border-l border-outline-variant pt-6 md:pt-0 md:pl-8">
+            <div className="text-center md:text-left space-y-1">
+              <span className="material-symbols-outlined text-primary text-2xl">flight</span>
+              <span className="font-serif text-3xl font-bold text-on-surface block">{trips.length}</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Trips Planned</span>
+            </div>
+
+            <div className="text-center md:text-left space-y-1">
+              <span className="material-symbols-outlined text-primary text-2xl">location_city</span>
+              <span className="font-serif text-3xl font-bold text-on-surface block">{totalStops}</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Cities Visited</span>
+            </div>
+
+            <div className="text-center md:text-left space-y-1">
+              <span className="material-symbols-outlined text-primary text-2xl">local_activity</span>
+              <span className="font-serif text-3xl font-bold text-on-surface block">{totalActivities}</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Activities Scheduled</span>
+            </div>
           </div>
-        </div>
 
-        {/* Preferences */}
-        <div className="space-y-4 pt-4 border-t border-outline-variant/60">
-          <h4 className="font-serif text-lg font-bold text-on-surface">
-            Travel Preferences & Currency
-          </h4>
+        </section>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-1.5">
-              Preferred Currency Display
-            </label>
-            <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              className="w-full sm:w-64 px-3.5 py-2.5 text-sm bg-surface-container-low border border-outline/50 rounded-sm text-on-surface focus:outline-none focus:border-primary"
+        {/* Profile Settings Form */}
+        <section className="bg-surface border border-outline-variant p-8 rounded-sm shadow-paper space-y-6 max-w-2xl">
+          <h2 className="font-serif text-2xl font-bold text-on-surface border-b border-outline-variant pb-3">
+            Account Details
+          </h2>
+
+          {savedSuccess && (
+            <div className="p-3 bg-surface-container border border-primary text-primary text-xs font-semibold rounded-sm">
+              ✓ Profile settings updated successfully.
+            </div>
+          )}
+
+          <form onSubmit={handleSave} className="space-y-6">
+            <div>
+              <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="w-full bg-transparent border-0 border-b border-outline focus:ring-0 focus:border-primary pb-2 text-on-surface text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">
+                Email Address
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full bg-transparent border-0 border-b border-outline focus:ring-0 focus:border-primary pb-2 text-on-surface text-sm"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="bg-primary text-white font-semibold text-xs uppercase tracking-wider py-3 px-6 rounded-sm shadow-paper hover:bg-primary-container transition"
             >
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-              <option value="GBP">GBP (£)</option>
-              <option value="JPY">JPY (¥)</option>
-              <option value="INR">INR (₹)</option>
-            </select>
-          </div>
-        </div>
+              Save Profile Changes
+            </button>
+          </form>
+        </section>
 
-        {/* Saved Destinations list */}
-        <div className="space-y-4 pt-4 border-t border-outline-variant/60">
-          <h4 className="font-serif text-lg font-bold text-on-surface flex items-center space-x-2">
-            <Heart className="w-4 h-4 text-primary" />
-            <span>Saved Destinations Catalog</span>
-          </h4>
+        {/* Saved Destinations */}
+        <section className="space-y-4">
+          <h3 className="font-serif text-2xl font-bold text-on-surface border-b border-outline-variant pb-3">
+            Saved Destinations
+          </h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {MOCK_CITIES.slice(0, 3).map(city => (
-              <div key={city.id} className="p-3 border border-outline/40 bg-surface-container-low flex items-center space-x-3">
-                <img src={city.image} alt={city.name} className="w-10 h-10 object-cover rounded-none" />
-                <div>
-                  <h5 className="font-serif text-xs font-bold text-on-surface">{city.name}</h5>
-                  <span className="text-[10px] text-outline">{city.country}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {MOCK_CITIES.slice(0, 3).map((city) => (
+              <div key={city.id} className="relative h-64 rounded-sm overflow-hidden border border-outline-variant group shadow-paper">
+                <img src={city.image} alt={city.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 text-white">
+                  <h4 className="font-serif text-2xl font-bold">{city.name}</h4>
+                  <span className="text-xs font-mono uppercase tracking-wider text-white/80">{city.country}</span>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Save CTA */}
-        <div className="pt-4 border-t border-outline-variant/60 flex justify-end">
-          <button
-            type="submit"
-            className="px-6 py-2.5 bg-primary text-white text-xs font-semibold uppercase tracking-wider rounded-sm hover:bg-primary-container transition shadow-paper"
-          >
-            Save Profile Changes
-          </button>
-        </div>
-
-      </form>
+      </main>
     </div>
   );
 }

@@ -1,82 +1,90 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, CheckCircle2, ArrowLeft } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (email) {
+    setLoading(true);
+    setTimeout(() => {
       setSubmitted(true);
-    }
+      setLoading(false);
+    }, 800);
   };
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center py-12 px-4">
-      <div className="max-w-md w-full space-y-6 bg-surface p-8 sm:p-10 border border-outline/40 shadow-2xl rounded-sm text-center">
-        
-        <div className="inline-flex w-12 h-12 bg-primary/10 text-primary font-serif text-2xl font-bold items-center justify-center rounded-sm mx-auto mb-2">
-          <Mail className="w-6 h-6" />
+    <div className="min-h-screen flex items-center justify-center bg-background p-6">
+      <div className="w-full max-w-md bg-surface border border-outline-variant p-8 sm:p-10 shadow-paper space-y-6">
+        <div className="text-center space-y-2">
+          <Link to="/" className="inline-flex items-center space-x-2 mb-4">
+            <div className="w-8 h-8 bg-primary text-white flex items-center justify-center font-serif text-lg font-bold rounded-sm">
+              GT
+            </div>
+            <span className="font-serif text-xl font-bold uppercase tracking-tight text-on-surface">
+              GlobeTrotter
+            </span>
+          </Link>
+
+          <h1 className="font-serif text-2xl font-bold text-on-surface">
+            Account Recovery
+          </h1>
+          <p className="text-xs text-secondary leading-relaxed">
+            Enter the email address associated with your GlobeTrotter account to receive password reset instructions.
+          </p>
         </div>
 
-        <h2 className="font-serif text-3xl font-bold text-on-surface">
-          Recover Account
-        </h2>
-
         {submitted ? (
-          <div className="space-y-4 p-4 bg-surface-container-low border border-outline/40 rounded-sm text-left">
-            <div className="flex items-center space-x-2 text-primary font-semibold text-sm">
-              <CheckCircle2 className="w-5 h-5" />
-              <span>Reset Link Transmitted</span>
-            </div>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              We have dispatched a secure password reset link to <strong className="text-on-surface">{email}</strong>. The link expires in 15 minutes.
+          <div className="bg-surface-container-low border border-primary/40 p-4 text-center space-y-3">
+            <span className="material-symbols-outlined text-primary text-3xl">mark_email_read</span>
+            <h3 className="font-serif text-base font-bold text-on-surface">Recovery Email Sent</h3>
+            <p className="text-xs text-secondary leading-relaxed">
+              We've dispatched reset instructions to <strong className="text-on-surface">{email}</strong>. Please check your inbox.
             </p>
-            <Link 
-              to="/login"
-              className="inline-flex items-center space-x-2 text-xs font-semibold text-primary uppercase tracking-wider pt-2 hover:underline"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to Login</span>
+            <Link to="/login" className="inline-block pt-2 text-xs font-semibold text-primary uppercase tracking-wider hover:underline">
+              Return to Login &rarr;
             </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-5 text-left">
-            <p className="text-xs text-on-surface-variant text-center leading-relaxed">
-              Enter your registered GlobeTrotter account email address to receive an expiring reset link.
-            </p>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-1">
-                Account Email
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="relative w-full group">
+              <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">
+                Email address
               </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@domain.com"
-                className="w-full px-3 py-2.5 text-sm bg-surface-container-low border border-outline/50 rounded-sm focus:outline-none focus:border-primary text-on-surface"
-              />
+              <div className="relative flex items-end">
+                <span className="material-symbols-outlined text-secondary absolute left-0 bottom-2 text-xl">
+                  mail
+                </span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  required
+                  className="w-full bg-transparent border-0 border-b border-outline focus:ring-0 focus:border-primary pb-2 pl-8 pr-0 text-on-surface text-sm transition-colors placeholder-secondary/60"
+                />
+              </div>
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 bg-primary text-white font-semibold uppercase tracking-wider text-xs rounded-sm hover:bg-primary-container transition shadow-paper"
+              disabled={loading}
+              className="w-full bg-primary text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-6 rounded-sm shadow-paper hover:bg-primary-container transition flex items-center justify-center space-x-2 disabled:opacity-50"
             >
-              Send Reset Authorization
+              <span>{loading ? 'Sending Instructions...' : 'Send Recovery Link'}</span>
+              <span className="material-symbols-outlined text-lg">send</span>
             </button>
 
-            <div className="text-center pt-2">
-              <Link to="/login" className="text-xs text-on-surface-variant hover:text-primary transition">
-                &larr; Return to Sign In
+            <div className="text-center text-xs text-secondary pt-2">
+              Remember your password?{' '}
+              <Link to="/login" className="font-semibold text-primary hover:underline">
+                Log in
               </Link>
             </div>
           </form>
         )}
-
       </div>
     </div>
   );

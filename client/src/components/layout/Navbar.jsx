@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Compass, MapPin, Calendar, DollarSign, Sparkles, User, LogOut, PlusCircle, ShieldCheck, Menu, X } from 'lucide-react';
+import { Sparkles, LogOut, PlusCircle, ShieldCheck, Menu, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import AITripModal from '../modals/AITripModal';
 
@@ -93,7 +93,6 @@ export default function Navbar() {
                   <span>Plan Trip</span>
                 </Link>
 
-                {/* Profile Avatar & Dropdown Link */}
                 <div className="relative group pl-2 border-l border-outline-variant/60">
                   <Link to="/profile" className="flex items-center space-x-2 focus:outline-none">
                     <img 
@@ -130,7 +129,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile menu toggle */}
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -141,7 +139,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Dropdown Navigation */}
         {isMobileMenuOpen && (
           <div className="md:hidden border-b border-outline-variant bg-surface px-4 pt-3 pb-6 space-y-3">
             {isAuthenticated ? (
@@ -185,7 +182,6 @@ export default function Navbar() {
         )}
       </header>
 
-      {/* AI Trip Architect Modal */}
       <AITripModal isOpen={isAiModalOpen} onClose={() => setIsAiModalOpen(false)} />
     </>
   );

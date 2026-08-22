@@ -1,6 +1,38 @@
-/* Responsive layout helpers for GlobeTrotter */
-@media (max-width: 640px) {
-  .editorial-grid {
-    grid-template-columns: 1fr;
+/* Responsive Utility Classes for GlobeTrotter */
+
+@media (max-width: 768px) {
+  /* Prevent horizontal overflow body scrolling */
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
   }
+
+  /* Broadsheet display titles mobile sizing */
+  .text-display-lg {
+    font-size: 2.25rem !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Table horizontal scroll container */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Mobile floating cards adjustment */
+  .floating-card-mobile {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    margin-top: 1rem;
+  }
+}
+
+/* Touch friendly minimum tap targets */
+button, a {
+  min-height: 38px;
+  touch-action: manipulation;
 }

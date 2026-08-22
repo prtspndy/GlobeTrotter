@@ -15,218 +15,221 @@ export default function DashboardPage() {
   }, 0);
 
   const totalDestinations = trips.reduce((acc, t) => acc + (t.stops?.length || 0), 0);
+  const featuredTrip = trips[0];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <div className="w-full pb-20">
       
-      {/* Welcome Banner */}
-      <div className="bg-surface-container-high border border-outline/40 p-8 sm:p-10 shadow-paper relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="space-y-2 max-w-2xl">
-          <span className="text-xs font-semibold uppercase tracking-widest text-primary block">
-            Traveler Dashboard
-          </span>
-          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-on-surface">
-            Welcome Back, {user?.name || 'Traveler'}
-          </h1>
-          <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
-            You have <strong className="text-on-surface">{trips.length} active trips</strong> planned across <strong className="text-on-surface">{totalDestinations} destination stops</strong>.
-          </p>
-        </div>
+      {/* Hero Header Section */}
+      <section className="relative w-full bg-surface-container-low border-b border-outline-variant py-12 lg:py-16">
+        <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="space-y-3 max-w-2xl">
+            <span className="font-label-caps text-xs text-primary tracking-widest uppercase font-semibold block">
+              Good to see you
+            </span>
+            <h1 className="font-serif text-3xl sm:text-5xl font-bold text-on-surface leading-tight">
+              Ready for your next adventure, {user?.name?.split(' ')[0] || 'Traveler'}?
+            </h1>
+            <p className="text-base text-on-surface-variant font-light">
+              Your journeys, destinations and itineraries — all in one place.
+            </p>
+          </div>
 
-        <div className="flex flex-wrap gap-3">
+          <div className="flex items-center gap-4">
+            <Link
+              to="/trips/create"
+              className="bg-primary hover:bg-primary-container text-white font-semibold text-xs uppercase tracking-wider px-6 py-3.5 rounded-sm flex items-center gap-2 transition shadow-paper"
+            >
+              <span className="material-symbols-outlined text-lg">add</span>
+              Plan a new trip
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-12 space-y-12">
+        
+        {/* Quick Actions Grid */}
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link
             to="/trips/create"
-            className="flex items-center space-x-2 px-5 py-3 bg-primary text-white text-xs font-semibold uppercase tracking-wider rounded-sm hover:bg-primary-container transition shadow-paper"
+            className="flex flex-col items-center justify-center gap-3 py-6 border border-outline-variant rounded-sm bg-surface hover:bg-surface-container-low transition text-on-surface shadow-paper"
           >
-            <PlusCircle className="w-4 h-4" />
-            <span>Plan New Trip</span>
+            <span className="material-symbols-outlined text-primary text-3xl">travel_explore</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">Plan a trip</span>
           </Link>
-        </div>
-      </div>
 
-      {/* Quick Metrics Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-surface border border-outline/40 p-6 shadow-paper space-y-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-outline block">Total Planned Trips</span>
-          <div className="flex justify-between items-baseline">
-            <span className="font-serif text-3xl font-bold text-on-surface">{trips.length}</span>
-            <Compass className="w-5 h-5 text-primary" />
-          </div>
-        </div>
+          <Link
+            to="/discover/destinations"
+            className="flex flex-col items-center justify-center gap-3 py-6 border border-outline-variant rounded-sm bg-surface hover:bg-surface-container-low transition text-on-surface shadow-paper"
+          >
+            <span className="material-symbols-outlined text-primary text-3xl">map</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">Explore cities</span>
+          </Link>
 
-        <div className="bg-surface border border-outline/40 p-6 shadow-paper space-y-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-outline block">Destination Stops</span>
-          <div className="flex justify-between items-baseline">
-            <span className="font-serif text-3xl font-bold text-on-surface">{totalDestinations}</span>
-            <MapPin className="w-5 h-5 text-tertiary" />
-          </div>
-        </div>
+          <Link
+            to="/discover/activities"
+            className="flex flex-col items-center justify-center gap-3 py-6 border border-outline-variant rounded-sm bg-surface hover:bg-surface-container-low transition text-on-surface shadow-paper"
+          >
+            <span className="material-symbols-outlined text-primary text-3xl">local_activity</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">Find activities</span>
+          </Link>
 
-        <div className="bg-surface border border-outline/40 p-6 shadow-paper space-y-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-outline block">Total Expenses Logged</span>
-          <div className="flex justify-between items-baseline">
-            <span className="font-serif text-3xl font-bold text-on-surface">${totalSpent.toLocaleString()}</span>
-            <DollarSign className="w-5 h-5 text-primary" />
-          </div>
-        </div>
+          <Link
+            to={featuredTrip ? `/trips/${featuredTrip.id}/calendar` : '/trips'}
+            className="flex flex-col items-center justify-center gap-3 py-6 border border-outline-variant rounded-sm bg-surface hover:bg-surface-container-low transition text-on-surface shadow-paper"
+          >
+            <span className="material-symbols-outlined text-primary text-3xl">calendar_month</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">View calendar</span>
+          </Link>
+        </section>
 
-        <div className="bg-surface border border-outline/40 p-6 shadow-paper space-y-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-outline block">Account Tier</span>
-          <div className="flex justify-between items-baseline">
-            <span className="font-serif text-2xl font-bold text-on-surface uppercase">Broadsheet</span>
-            <span className="px-2 py-0.5 text-[10px] uppercase font-bold bg-primary/10 text-primary border border-primary/30 rounded-sm">
-              Pro
-            </span>
-          </div>
-        </div>
-      </div>
+        {/* Featured Next Adventure */}
+        {featuredTrip && (
+          <section className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center bg-surface border border-outline-variant p-6 lg:p-8 rounded-sm shadow-paper">
+            <div className="md:col-span-8 flex flex-col justify-center space-y-6">
+              <div>
+                <span className="font-label-caps text-xs text-secondary uppercase tracking-widest block mb-1">
+                  Next Adventure
+                </span>
+                <h2 className="font-serif text-3xl font-bold text-on-surface">
+                  {featuredTrip.title}
+                </h2>
+              </div>
 
-      {/* Main Grid: Left 8 cols Trips, Right 4 cols Recommendations */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        
-        {/* Left Column - Active Trips */}
-        <div className="lg:col-span-8 space-y-6">
-          <div className="flex justify-between items-center border-b border-outline-variant/60 pb-3">
-            <h2 className="font-serif text-2xl font-bold text-on-surface">
-              Upcoming & Active Trips
-            </h2>
+              {/* Dynamic Route Visualization */}
+              <div className="flex items-center gap-2 overflow-x-auto py-2">
+                {featuredTrip.stops?.map((stop, idx) => (
+                  <React.Fragment key={stop.id || idx}>
+                    <div className="flex flex-col items-center text-center min-w-[70px]">
+                      <span className="text-xs font-semibold text-on-surface">{stop.cityName}</span>
+                    </div>
+                    {idx < featuredTrip.stops.length - 1 && (
+                      <div className="flex-1 min-w-[50px] border-t-2 border-dashed border-primary relative my-auto">
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 material-symbols-outlined text-primary text-sm bg-surface px-1">
+                          {idx % 2 === 0 ? 'flight' : 'directions_railway'}
+                        </span>
+                      </div>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+
+              <div className="flex gap-8 border-l-2 border-primary pl-4">
+                <div>
+                  <p className="font-label-caps text-xs text-secondary uppercase mb-1">Dates</p>
+                  <p className="text-sm font-medium text-on-surface">{featuredTrip.startDate} — {featuredTrip.endDate}</p>
+                </div>
+                <div>
+                  <p className="font-label-caps text-xs text-secondary uppercase mb-1">Destinations</p>
+                  <p className="text-sm font-medium text-on-surface">{featuredTrip.stops?.length || 0} stops planned</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-2">
+                <Link
+                  to={`/trips/${featuredTrip.id}`}
+                  className="border border-on-surface text-on-surface hover:bg-surface-container-low text-xs font-semibold uppercase tracking-wider px-6 py-2.5 rounded-sm transition"
+                >
+                  Continue planning
+                </Link>
+                <Link
+                  to={`/globe/trip/${featuredTrip.shareId}`}
+                  className="bg-surface-container border border-outline-variant text-tertiary hover:bg-tertiary hover:text-white text-xs font-semibold uppercase tracking-wider px-5 py-2.5 rounded-sm transition flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-base">share</span>
+                  Share
+                </Link>
+              </div>
+            </div>
+
+            <div className="md:col-span-4 h-[280px]">
+              <img
+                src={featuredTrip.coverImage}
+                alt={featuredTrip.title}
+                className="w-full h-full object-cover rounded-sm border border-outline-variant"
+              />
+            </div>
+          </section>
+        )}
+
+        {/* Trips Catalog Section */}
+        <section className="space-y-6">
+          <div className="flex justify-between items-end border-b border-outline-variant pb-3">
+            <div>
+              <h2 className="font-serif text-2xl font-bold text-on-surface">Your Trips</h2>
+              <p className="text-xs text-secondary">Manage and customize your itineraries</p>
+            </div>
             <Link to="/trips" className="text-xs font-semibold uppercase tracking-wider text-primary hover:underline">
-              View All ({trips.length}) &rarr;
+              View all ({trips.length})
             </Link>
           </div>
 
-          <div className="space-y-6">
-            {trips.map(trip => {
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {trips.map((trip) => {
               const tripExpensesTotal = trip.expenses?.reduce((acc, e) => acc + Number(e.amount), 0) || 0;
               const budgetPercent = Math.min(100, Math.round((tripExpensesTotal / (trip.totalBudget || 1)) * 100));
 
               return (
-                <div key={trip.id} className="bg-surface border border-outline/40 shadow-paper overflow-hidden group hover:border-primary transition">
-                  <div className="grid grid-cols-1 md:grid-cols-12">
-                    
-                    {/* Image Thumbnail */}
-                    <div className="md:col-span-4 h-48 md:h-auto relative overflow-hidden">
-                      <img 
-                        src={trip.coverImage} 
-                        alt={trip.title} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500 rounded-none"
-                      />
-                      <div className="absolute top-3 left-3 bg-surface/90 backdrop-blur px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider border border-outline/30 rounded-sm">
-                        {trip.visibility}
-                      </div>
+                <div key={trip.id} className="group border border-outline-variant rounded-sm bg-surface hover:shadow-paper transition overflow-hidden flex flex-col">
+                  <div className="h-48 relative overflow-hidden">
+                    <img
+                      src={trip.coverImage}
+                      alt={trip.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    />
+                    <div className="absolute top-3 right-3 bg-surface/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-on-surface border border-outline-variant rounded-sm">
+                      {trip.visibility}
                     </div>
+                  </div>
 
-                    {/* Content Details */}
-                    <div className="md:col-span-8 p-6 flex flex-col justify-between space-y-4">
-                      <div>
-                        <div className="flex items-center space-x-2 text-[11px] text-outline font-semibold uppercase tracking-wider mb-1">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>{trip.startDate} &mdash; {trip.endDate}</span>
-                          <span>&bull;</span>
-                          <span>{trip.stops?.length || 0} Stops</span>
-                        </div>
-
+                  <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                    <div>
+                      <div className="flex justify-between items-start mb-1">
                         <h3 className="font-serif text-xl font-bold text-on-surface">
                           <Link to={`/trips/${trip.id}`} className="hover:text-primary transition">
                             {trip.title}
                           </Link>
                         </h3>
-
-                        <p className="text-xs text-on-surface-variant line-clamp-2 mt-1">
-                          {trip.description}
-                        </p>
-                      </div>
-
-                      {/* Budget Mini Progress */}
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between text-[11px] font-semibold uppercase tracking-wider">
-                          <span className="text-on-surface-variant">Expense Allocation</span>
-                          <span className={budgetPercent > 90 ? "text-error" : "text-primary"}>
-                            ${tripExpensesTotal.toLocaleString()} / ${trip.totalBudget.toLocaleString()} ({budgetPercent}%)
-                          </span>
-                        </div>
-                        <div className="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
-                          <div 
-                            className={`h-full transition-all duration-500 ${budgetPercent > 90 ? 'bg-error' : 'bg-primary'}`} 
-                            style={{ width: `${budgetPercent}%` }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center justify-between pt-2 border-t border-outline-variant/40 text-xs font-semibold uppercase tracking-wider">
-                        <div className="flex space-x-4">
-                          <Link to={`/trips/${trip.id}`} className="text-primary hover:underline flex items-center space-x-1">
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>Itinerary</span>
-                          </Link>
-                          <Link to={`/trips/${trip.id}/budget`} className="text-on-surface-variant hover:text-primary transition flex items-center space-x-1">
-                            <DollarSign className="w-3.5 h-3.5" />
-                            <span>Budget</span>
-                          </Link>
-                          <Link to={`/globe/trip/${trip.shareId}`} className="text-tertiary hover:underline flex items-center space-x-1">
-                            <Share2 className="w-3.5 h-3.5" />
-                            <span>Share</span>
-                          </Link>
-                        </div>
-
-                        <button 
+                        <button
                           onClick={() => deleteTrip(trip.id)}
-                          className="text-on-surface/40 hover:text-error transition"
-                          title="Delete Trip"
+                          className="text-secondary hover:text-error transition p-1"
+                          title="Delete trip"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <span className="material-symbols-outlined text-lg">delete</span>
                         </button>
                       </div>
-
+                      <p className="text-xs text-secondary font-medium">
+                        {trip.startDate} — {trip.endDate}
+                      </p>
                     </div>
 
+                    <div>
+                      <div className="flex justify-between text-xs font-mono text-secondary mb-1">
+                        <span>Expense Budget</span>
+                        <span>{budgetPercent}%</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
+                        <div className="h-full bg-primary" style={{ width: `${budgetPercent}%` }} />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-3 border-t border-outline-variant text-xs font-semibold uppercase tracking-wider">
+                      <Link to={`/trips/${trip.id}`} className="text-primary hover:underline flex items-center gap-1">
+                        Itinerary &rarr;
+                      </Link>
+                      <Link to={`/trips/${trip.id}/budget`} className="text-secondary hover:text-on-surface">
+                        Budget
+                      </Link>
+                    </div>
                   </div>
                 </div>
               );
             })}
           </div>
-        </div>
-
-        {/* Right Column - Recommended Destinations & Quick Tools */}
-        <div className="lg:col-span-4 space-y-8">
-          
-          <div className="bg-surface p-6 border border-outline/40 shadow-paper space-y-4">
-            <h3 className="font-serif text-lg font-bold text-on-surface border-b border-outline-variant/60 pb-2">
-              Recommended Destinations
-            </h3>
-
-            <div className="space-y-4">
-              {MOCK_CITIES.slice(0, 3).map(city => (
-                <div key={city.id} className="flex items-center space-x-3 group">
-                  <img
-                    src={city.image}
-                    alt={city.name}
-                    className="w-14 h-14 object-cover border border-outline/30 rounded-none group-hover:opacity-90"
-                  />
-                  <div className="flex-1">
-                    <h4 className="font-serif text-sm font-bold text-on-surface group-hover:text-primary transition">
-                      {city.name}, {city.country}
-                    </h4>
-                    <span className="text-[11px] text-outline uppercase font-medium">
-                      Popularity: {city.popularity}%
-                    </span>
-                  </div>
-                  <Link
-                    to="/discover/destinations"
-                    className="p-1.5 bg-surface-container border border-outline/40 rounded-sm hover:bg-primary hover:text-white transition text-xs"
-                  >
-                    + Add
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
+        </section>
 
       </div>
-
     </div>
   );
 }

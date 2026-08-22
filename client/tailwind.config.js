@@ -54,6 +54,15 @@ export default {
       },
       boxShadow: {
         paper: "0px 2px 8px rgba(27, 28, 28, 0.06)",
+      },
+      spacing: {
+        "stack-xl": "80px",
+        "gutter": "24px",
+        "stack-md": "32px",
+        "margin-desktop": "64px",
+        "container-max": "1280px",
+        "unit": "4px",
+        "margin-mobile": "20px"
       }
     },
   },
