@@ -5,6 +5,8 @@ import { MOCK_CITIES } from '../data/mockData';
 import { calculateRoute } from '../services/geoapifyService';
 import Toast from '../components/ui/Toast';
 
+import ShareTripModal from '../components/modals/ShareTripModal';
+
 export default function ItineraryBuilderPage() {
   const { id } = useParams();
   const { getTrip, addStopToTrip, removeStopFromTrip, addActivityToStop, removeActivityFromStop } = useTrip();
@@ -12,6 +14,7 @@ export default function ItineraryBuilderPage() {
   const trip = getTrip(id);
   const [showAddStopModal, setShowAddStopModal] = useState(false);
   const [showAddActivityModal, setShowAddActivityModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [selectedStopId, setSelectedStopId] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
   const [routeInfo, setRouteInfo] = useState(null);
@@ -144,10 +147,13 @@ export default function ItineraryBuilderPage() {
                 Calendar
               </Link>
 
-              <Link to={`/globe/trip/${trip.shareId}`} className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-xs font-semibold uppercase tracking-wider rounded-sm hover:bg-primary-container transition shadow-paper">
+              <button
+                onClick={() => setShowShareModal(true)}
+                className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-xs font-semibold uppercase tracking-wider rounded-sm hover:bg-primary-container transition shadow-paper cursor-pointer"
+              >
                 <span className="material-symbols-outlined text-base">share</span>
-                Share Link
-              </Link>
+                Share Trip Plan
+              </button>
             </div>
           </div>
 
@@ -422,6 +428,9 @@ export default function ItineraryBuilderPage() {
           </div>
         </div>
       )}
+
+      {/* Share Trip Modal */}
+      <ShareTripModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} trip={trip} />
 
     </div>
   );

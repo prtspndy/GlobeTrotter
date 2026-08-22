@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
-import { MOCK_ACTIVITIES } from '../data/mockData';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MapPin, Sparkles, Plus, CheckCircle2, ArrowRight, Eye, Building } from 'lucide-react';
+import { MOCK_CITIES, MOCK_ACTIVITIES } from '../data/mockData';
+import ShareTripModal from '../components/modals/ShareTripModal';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MapPin, Sparkles, Plus, CheckCircle2, ArrowRight, Landmark, Bell, Trash2, X, AlertCircle, Share2 } from 'lucide-react';
 
 export default function CalendarTimelinePage() {
   const { id } = useParams();
-  const { trips, getTrip, addActivityToStop } = useTrip();
+  const { trips, getTrip, addActivityToStop, addReminder, deleteReminder } = useTrip();
 
   // If no ID in route parameter, fallback to active or first trip
   const activeTripId = id || trips[0]?.id;
@@ -18,9 +19,14 @@ export default function CalendarTimelinePage() {
   const [currentMonth, setCurrentMonth] = useState(today.getMonth()); // 0-indexed
   const [selectedDateStr, setSelectedDateStr] = useState(today.toISOString().split('T')[0]);
 
-  // View Mode: 'calendar' | 'city_view' | 'places_view'
-  const [viewTab, setViewTab] = useState('calendar');
   const [addedToast, setAddedToast] = useState('');
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+
+  // New Reminder Form State
+  const [reminderTitle, setReminderTitle] = useState('');
+  const [reminderTime, setReminderTime] = useState('09:00 AM');
+  const [reminderType, setReminderType] = useState('Flight Booking');
 
   if (!trip) {
     return (
@@ -34,7 +40,6 @@ export default function CalendarTimelinePage() {
     );
   }
 
-  // Month Names Array
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -80,7 +85,7 @@ export default function CalendarTimelinePage() {
   const activitiesByDate = {};
   const cityByDate = {};
 
-  trip.stops?.forEach((stop, sIdx) => {
+  trip.stops?.forEach((stop) => {
     const stopDate = stop.arrivalDate || trip.startDate;
     cityByDate[stopDate] = stop.cityName;
 
@@ -95,17 +100,25 @@ export default function CalendarTimelinePage() {
     });
   });
 
-  // Selected date city & activities list
-  const selectedCityName = cityByDate[selectedDateStr] || trip.stops?.[0]?.cityName || 'Jaipur';
-  const selectedDayActivities = activitiesByDate[selectedDateStr] || [];
+  // Reminders map by date
+  const remindersByDate = {};
+  trip.reminders?.forEach((rem) => {
+    if (!remindersByDate[rem.date]) remindersByDate[rem.date] = [];
+    remindersByDate[rem.date].push(rem);
+  });
 
-  // Get tourist places (Jovalayak Sthal) for the selected city
+  // Selected Date Info
+  const selectedCityName = cityByDate[selectedDateStr] || trip.stops?.[0]?.cityName || 'Jaipur';
+  const selectedCityObj = MOCK_CITIES.find((c) => c.name.toLowerCase() === selectedCityName.toLowerCase()) || MOCK_CITIES[0];
+  const selectedDayActivities = activitiesByDate[selectedDateStr] || [];
+  const selectedDayReminders = remindersByDate[selectedDateStr] || [];
+
+  // Get famous tourist places (Jovalayak Sthal) for the selected city
   const cityAttractions = MOCK_ACTIVITIES.filter((act) =>
     act.cityName?.toLowerCase().includes(selectedCityName.toLowerCase()) ||
     selectedCityName.toLowerCase().includes(act.cityName?.toLowerCase() || '')
   );
 
-  // Quick 1-Click add tourist place to calendar date
   const handleAddAttractionToCalendarDate = (place) => {
     const targetStop = trip.stops?.find((s) => s.cityName.toLowerCase() === selectedCityName.toLowerCase()) || trip.stops?.[0];
     if (targetStop) {
@@ -117,13 +130,30 @@ export default function CalendarTimelinePage() {
         duration: place.duration || '2 hours',
         description: place.description || `Famous tourist attraction in ${selectedCityName}.`
       });
-      setAddedToast(`Added "${place.name || place.title}" to ${selectedDateStr} schedule!`);
+      setAddedToast(`Scheduled "${place.name || place.title}" on ${selectedDateStr}!`);
       setTimeout(() => setAddedToast(''), 3000);
     }
   };
 
+  const handleCreateReminderSubmit = (e) => {
+    e.preventDefault();
+    if (!reminderTitle.trim()) return;
+
+    addReminder(trip.id, {
+      title: reminderTitle,
+      date: selectedDateStr,
+      time: reminderTime,
+      type: reminderType
+    });
+
+    setReminderTitle('');
+    setShowReminderModal(false);
+    setAddedToast(`Set Travel Reminder: "${reminderTitle}" for ${selectedDateStr}!`);
+    setTimeout(() => setAddedToast(''), 3000);
+  };
+
   return (
-    <div className="w-full bg-surface pb-24">
+    <div className="w-full bg-surface pb-24 relative">
       
       <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-10 space-y-8">
         
@@ -132,13 +162,13 @@ export default function CalendarTimelinePage() {
           <div>
             <div className="flex items-center gap-2 font-label-caps text-xs text-primary uppercase tracking-widest font-semibold mb-1">
               <CalendarIcon className="w-4 h-4 text-primary" />
-              <span>TRIP CALENDAR & TOURIST PLACES (JOVALAYAK STHAL)</span>
+              <span>LIVE TRAVEL CALENDAR, REMINDERS & DAILY PLANNER</span>
             </div>
             <h1 className="font-serif text-3xl md:text-5xl font-bold text-on-surface">
               {trip.title}
             </h1>
             <p className="text-xs text-secondary mt-1">
-              Live Dates &bull; Today: <strong className="font-mono text-primary">{today.toDateString()}</strong> &bull; {trip.stops?.length || 0} Cities Planned
+              Live Calendar &bull; Today: <strong className="font-mono text-primary">{today.toDateString()}</strong> &bull; {trip.reminders?.length || 0} Reminders Set
             </p>
           </div>
 
@@ -157,75 +187,50 @@ export default function CalendarTimelinePage() {
             )}
 
             <button
-              onClick={handleJumpToToday}
-              className="px-3.5 py-2 bg-surface-container-low border border-outline-variant text-xs font-semibold rounded-xl text-on-surface hover:border-primary transition cursor-pointer"
+              onClick={() => setShowReminderModal(true)}
+              className="px-3.5 py-2 bg-amber-500 text-white text-xs font-semibold uppercase tracking-wider rounded-xl hover:bg-amber-600 transition flex items-center gap-1.5 shadow-sm cursor-pointer"
             >
-              Today
+              <Bell className="w-4 h-4" />
+              <span>+ Add Reminder</span>
+            </button>
+
+            <button
+              onClick={() => setShowShareModal(true)}
+              className="px-3.5 py-2 bg-primary text-white text-xs font-semibold uppercase tracking-wider rounded-xl hover:bg-primary-container transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+            >
+              <Share2 className="w-4 h-4" />
+              <span>Share Trip Plan</span>
             </button>
 
             <Link
               to={`/trips/${trip.id}`}
               className="px-4 py-2 bg-primary text-white text-xs font-semibold uppercase tracking-wider rounded-xl hover:bg-primary-container transition flex items-center gap-1.5 shadow-paper"
             >
-              <span>Itinerary Builder</span>
+              <span>Open Builder</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </header>
 
-        {/* View Mode Tabs (Calendar | City-Wise View | Jovalayak Sthal Places View) */}
-        <div className="flex justify-between items-center bg-surface border border-outline-variant p-4 rounded-2xl shadow-paper flex-wrap gap-4">
-          
+        {/* Month Control Header */}
+        <div className="flex justify-between items-center bg-surface border border-outline-variant p-4 rounded-2xl shadow-paper">
+          <div className="flex items-center gap-3">
+            <h2 className="font-serif text-2xl font-bold text-on-surface">
+              {monthNames[currentMonth]} {currentYear}
+            </h2>
+            <span className="px-3 py-1 bg-surface-container text-primary font-mono text-xs font-bold rounded-lg border border-primary/20">
+              Click any date to view City, Tourist Places, Activities & Reminders
+            </span>
+          </div>
+
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setViewTab('calendar')}
-              className={`px-4 py-2 text-xs font-semibold rounded-xl border transition cursor-pointer flex items-center gap-1.5 ${
-                viewTab === 'calendar'
-                  ? 'bg-primary text-white border-primary shadow-sm'
-                  : 'bg-surface-container-low border-outline-variant text-on-surface hover:border-primary'
-              }`}
-            >
-              <CalendarIcon className="w-4 h-4" />
-              <span>Full Calendar View</span>
+            <button onClick={handlePrevMonth} className="p-2.5 bg-surface-container-low border border-outline-variant rounded-xl hover:border-primary cursor-pointer">
+              <ChevronLeft className="w-5 h-5" />
             </button>
-
-            <button
-              onClick={() => setViewTab('city_view')}
-              className={`px-4 py-2 text-xs font-semibold rounded-xl border transition cursor-pointer flex items-center gap-1.5 ${
-                viewTab === 'city_view'
-                  ? 'bg-primary text-white border-primary shadow-sm'
-                  : 'bg-surface-container-low border-outline-variant text-on-surface hover:border-primary'
-              }`}
-            >
-              <Building className="w-4 h-4" />
-              <span>City-Wise Schedule</span>
-            </button>
-
-            <button
-              onClick={() => setViewTab('places_view')}
-              className={`px-4 py-2 text-xs font-semibold rounded-xl border transition cursor-pointer flex items-center gap-1.5 ${
-                viewTab === 'places_view'
-                  ? 'bg-primary text-white border-primary shadow-sm'
-                  : 'bg-surface-container-low border-outline-variant text-on-surface hover:border-primary'
-              }`}
-            >
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Tourist Places (Jovalayak Sthal)</span>
+            <button onClick={handleNextMonth} className="p-2.5 bg-surface-container-low border border-outline-variant rounded-xl hover:border-primary cursor-pointer">
+              <ChevronRight className="w-5 h-5" />
             </button>
           </div>
-
-          <div className="flex items-center gap-2 font-mono text-xs text-secondary">
-            <span>{monthNames[currentMonth]} {currentYear}</span>
-            <div className="flex gap-1 ml-2">
-              <button onClick={handlePrevMonth} className="p-1.5 bg-surface-container-low border rounded-lg hover:border-primary">
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button onClick={handleNextMonth} className="p-1.5 bg-surface-container-low border rounded-lg hover:border-primary">
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
         </div>
 
         {/* Added Toast Notification */}
@@ -236,245 +241,304 @@ export default function CalendarTimelinePage() {
           </div>
         )}
 
-        {/* TAB 1: FULL CALENDAR GRID + DAY SCHEDULE & JOVALAYAK STHAL DRAWER */}
-        {viewTab === 'calendar' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Main 2-Column Split: Monthly Calendar (Span 6) + Complete Daily Travel Plan (Span 6) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Left Column: Monthly Calendar Matrix (Span 6) */}
+          <div className="lg:col-span-6 bg-surface border border-outline-variant p-6 rounded-2xl shadow-paper space-y-4">
             
-            {/* Calendar Grid (Span 7) */}
-            <div className="lg:col-span-7 bg-surface border border-outline-variant p-6 rounded-2xl shadow-paper space-y-4">
-              
-              <div className="grid grid-cols-7 gap-2 text-center pb-2 border-b border-outline-variant">
-                {daysOfWeek.map((day) => (
-                  <span key={day} className="text-xs font-bold text-secondary uppercase tracking-wider font-mono">
-                    {day}
-                  </span>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-7 gap-2">
-                {Array.from({ length: firstDayOfMonth }).map((_, idx) => (
-                  <div key={`empty-${idx}`} className="h-20 sm:h-24 bg-surface-container-low/30 rounded-xl opacity-30 border border-transparent" />
-                ))}
-
-                {Array.from({ length: totalDaysInMonth }).map((_, idx) => {
-                  const dayNum = idx + 1;
-                  const dateStr = formatDateString(currentYear, currentMonth, dayNum);
-                  const isSelected = selectedDateStr === dateStr;
-
-                  const isToday =
-                    today.getFullYear() === currentYear &&
-                    today.getMonth() === currentMonth &&
-                    today.getDate() === dayNum;
-
-                  const isTripDate = dateStr >= trip.startDate && dateStr <= trip.endDate;
-                  const dayActs = activitiesByDate[dateStr] || [];
-                  const dayCity = cityByDate[dateStr];
-
-                  return (
-                    <div
-                      key={dayNum}
-                      onClick={() => setSelectedDateStr(dateStr)}
-                      className={`h-20 sm:h-24 p-2 rounded-xl border transition cursor-pointer flex flex-col justify-between relative group ${
-                        isSelected
-                          ? 'border-primary ring-2 ring-primary/20 bg-primary/5 shadow-md'
-                          : isToday
-                          ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/20'
-                          : isTripDate
-                          ? 'border-outline-variant bg-surface-container-low hover:border-primary/50'
-                          : 'border-outline-variant/40 bg-surface/50 opacity-70 hover:opacity-100'
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className={`text-xs font-bold font-mono ${isToday ? 'text-amber-600 dark:text-amber-400 font-extrabold' : 'text-on-surface'}`}>
-                          {dayNum}
-                        </span>
-                        {dayCity && (
-                          <span className="text-[8px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-1 rounded truncate max-w-[50px]">
-                            {dayCity}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Scheduled Activities Badges */}
-                      <div className="space-y-1 overflow-hidden">
-                        {dayActs.slice(0, 2).map((act, aIdx) => (
-                          <div key={aIdx} className="px-1.5 py-0.5 bg-primary text-white text-[9px] font-medium rounded truncate shadow-sm">
-                            {act.name || act.title}
-                          </div>
-                        ))}
-                        {dayActs.length > 2 && (
-                          <span className="text-[9px] text-primary font-bold block">
-                            +{dayActs.length - 2} more
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-
-              </div>
-
+            <div className="grid grid-cols-7 gap-2 text-center pb-2 border-b border-outline-variant">
+              {daysOfWeek.map((day) => (
+                <span key={day} className="text-xs font-bold text-secondary uppercase font-mono">
+                  {day}
+                </span>
+              ))}
             </div>
 
-            {/* Day Schedule & Tourist Places Drawer (Span 5) */}
-            <div className="lg:col-span-5 space-y-6">
-              
-              {/* Selected Day Header */}
-              <div className="bg-surface border border-outline-variant p-6 rounded-2xl shadow-paper space-y-4">
-                <div className="border-b border-outline-variant pb-3 flex justify-between items-center">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-primary block">
-                      SCHEDULE FOR {selectedCityName}
-                    </span>
-                    <h3 className="font-serif text-2xl font-bold text-on-surface">
-                      {new Date(selectedDateStr + 'T00:00:00').toDateString()}
-                    </h3>
-                  </div>
-                  <span className="px-3 py-1 bg-surface-container text-on-surface font-semibold text-xs rounded-xl border border-outline-variant">
-                    {selectedCityName} Stop
-                  </span>
-                </div>
+            <div className="grid grid-cols-7 gap-2">
+              {Array.from({ length: firstDayOfMonth }).map((_, idx) => (
+                <div key={`empty-${idx}`} className="h-20 sm:h-24 bg-surface-container-low/30 rounded-xl opacity-30 border border-transparent" />
+              ))}
 
-                {/* Scheduled Activities List */}
-                <div className="space-y-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-secondary">
-                    Scheduled Activities ({selectedDayActivities.length})
-                  </h4>
+              {Array.from({ length: totalDaysInMonth }).map((_, idx) => {
+                const dayNum = idx + 1;
+                const dateStr = formatDateString(currentYear, currentMonth, dayNum);
+                const isSelected = selectedDateStr === dateStr;
 
-                  {selectedDayActivities.length > 0 ? (
-                    <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
-                      {selectedDayActivities.map((act, aIdx) => (
-                        <div key={aIdx} className="p-3 bg-surface-container-low border border-outline-variant rounded-xl flex justify-between items-center">
-                          <div>
-                            <span className="text-[10px] font-mono text-primary font-bold block">{act.time || '10:00 AM'} &bull; {act.category}</span>
-                            <h5 className="text-xs font-bold text-on-surface">{act.name || act.title}</h5>
-                          </div>
-                          <span className="text-xs font-mono font-bold text-on-surface">₹{act.cost}</span>
+                const isToday =
+                  today.getFullYear() === currentYear &&
+                  today.getMonth() === currentMonth &&
+                  today.getDate() === dayNum;
+
+                const isTripDate = dateStr >= trip.startDate && dateStr <= trip.endDate;
+                const dayActs = activitiesByDate[dateStr] || [];
+                const dayRems = remindersByDate[dateStr] || [];
+                const dayCity = cityByDate[dateStr];
+
+                return (
+                  <div
+                    key={dayNum}
+                    onClick={() => setSelectedDateStr(dateStr)}
+                    className={`h-20 sm:h-24 p-2 rounded-xl border transition cursor-pointer flex flex-col justify-between relative group ${
+                      isSelected
+                        ? 'border-primary ring-2 ring-primary/20 bg-primary/5 shadow-md'
+                        : isToday
+                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/20'
+                        : isTripDate
+                        ? 'border-outline-variant bg-surface-container-low hover:border-primary/50'
+                        : 'border-outline-variant/40 bg-surface/50 opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className={`text-xs font-bold font-mono ${isToday ? 'text-amber-600 dark:text-amber-400 font-extrabold' : 'text-on-surface'}`}>
+                        {dayNum}
+                      </span>
+                      {dayRems.length > 0 && (
+                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" title={`${dayRems.length} Travel Reminder`} />
+                      )}
+                    </div>
+
+                    <div className="space-y-1 overflow-hidden">
+                      {dayCity && (
+                        <span className="text-[8px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-1 rounded truncate block">
+                          {dayCity}
+                        </span>
+                      )}
+                      {dayRems.slice(0, 1).map((rem, rIdx) => (
+                        <div key={rIdx} className="px-1 py-0.5 bg-amber-500 text-white text-[8px] font-medium rounded truncate flex items-center gap-0.5">
+                          <Bell className="w-2 h-2" />
+                          <span>{rem.title}</span>
+                        </div>
+                      ))}
+                      {dayActs.slice(0, 1).map((act, aIdx) => (
+                        <div key={aIdx} className="px-1 py-0.5 bg-primary text-white text-[8px] font-medium rounded truncate">
+                          {act.name || act.title}
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    <p className="text-xs text-secondary italic">
-                      No activities scheduled for this date yet. Select a tourist place below to add!
-                    </p>
-                  )}
-                </div>
-
-                {/* Jovalayak Sthal / Tourist Places for this City */}
-                <div className="pt-4 border-t border-outline-variant space-y-3">
-                  <div className="flex justify-between items-center">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-on-surface flex items-center gap-1">
-                      <Sparkles className="w-4 h-4 text-amber-500" />
-                      <span>Famous Tourist Places in {selectedCityName}</span>
-                    </h4>
                   </div>
-
-                  <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
-                    {cityAttractions.map((place, pIdx) => (
-                      <div key={pIdx} className="p-3 bg-surface-container-low border border-outline-variant rounded-xl flex items-center justify-between gap-3">
-                        <img src={place.image} alt={place.name || place.title} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <h5 className="text-xs font-bold text-on-surface truncate">{place.name || place.title}</h5>
-                          <span className="text-[10px] text-primary font-mono block">₹{place.cost} &bull; {place.duration || '2 hrs'}</span>
-                        </div>
-                        <button
-                          onClick={() => handleAddAttractionToCalendarDate(place)}
-                          className="px-3 py-1.5 bg-primary text-white text-[10px] font-semibold uppercase rounded-lg hover:bg-primary-container transition flex items-center gap-1 cursor-pointer flex-shrink-0"
-                          title="Add to Calendar Schedule"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>Add</span>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
+                );
+              })}
 
             </div>
 
           </div>
-        )}
 
-        {/* TAB 2: CITY-WISE SCHEDULE VIEW */}
-        {viewTab === 'city_view' && (
-          <div className="space-y-6">
-            {trip.stops?.map((stop, sIdx) => (
-              <div key={stop.id || sIdx} className="bg-surface border border-outline-variant p-6 rounded-2xl shadow-paper space-y-4">
-                <div className="flex justify-between items-center border-b border-outline-variant pb-3">
-                  <div className="flex items-center gap-3">
-                    <img src={stop.image} alt={stop.cityName} className="w-12 h-12 rounded-xl object-cover border border-outline-variant" />
-                    <div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-primary block">
-                        Stop {sIdx + 1} &bull; {stop.country}
-                      </span>
-                      <h3 className="font-serif text-2xl font-bold text-on-surface">{stop.cityName}</h3>
-                    </div>
-                  </div>
-                  <span className="text-xs font-mono text-secondary">{stop.arrivalDate} &mdash; {stop.departureDate}</span>
+          {/* Right Column: Complete Daily Breakdown (City + Reminders + Tourist Places + Activities) (Span 6) */}
+          <div className="lg:col-span-6 space-y-6">
+            
+            {/* 1. WHERE TO GO (City Banner) */}
+            <div className="bg-surface border border-outline-variant rounded-2xl overflow-hidden shadow-paper space-y-4">
+              <div className="relative h-32 overflow-hidden">
+                <img src={selectedCityObj.image} alt={selectedCityName} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                <div className="absolute top-3 left-4 bg-primary text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
+                  <span>Where to Go (City Destination)</span>
                 </div>
+                <div className="absolute bottom-3 left-4 text-white">
+                  <h3 className="font-serif text-2xl font-bold">{selectedCityName}, {selectedCityObj.state || selectedCityObj.country}</h3>
+                  <span className="text-[11px] text-white/80 font-mono">Date: {new Date(selectedDateStr + 'T00:00:00').toDateString()}</span>
+                </div>
+              </div>
+            </div>
 
-                {/* City Activities */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {stop.activities?.map((act, aIdx) => (
-                    <div key={aIdx} className="p-4 bg-surface-container-low border border-outline-variant rounded-xl space-y-1">
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-[10px] font-mono text-primary font-bold">{act.time || '10:00 AM'}</span>
-                        <span className="text-xs font-mono font-bold text-on-surface">₹{act.cost}</span>
+            {/* 2. TRAVEL REMINDERS FOR THIS DATE */}
+            <div className="bg-surface border border-outline-variant p-5 rounded-2xl shadow-paper space-y-3">
+              <div className="flex justify-between items-center border-b border-outline-variant pb-2">
+                <h4 className="font-serif text-lg font-bold text-on-surface flex items-center gap-2">
+                  <div className="p-1.5 bg-amber-500/10 rounded-lg text-amber-500">
+                    <Bell className="w-4 h-4" />
+                  </div>
+                  <span>Travel Reminders ({selectedDayReminders.length})</span>
+                </h4>
+                <button
+                  onClick={() => setShowReminderModal(true)}
+                  className="px-2.5 py-1 bg-amber-500 text-white text-[10px] font-semibold uppercase rounded-lg hover:bg-amber-600 transition flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>Add Reminder</span>
+                </button>
+              </div>
+
+              {selectedDayReminders.length > 0 ? (
+                <div className="space-y-2">
+                  {selectedDayReminders.map((rem) => (
+                    <div key={rem.id} className="p-3 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-800 rounded-xl flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                        <div>
+                          <h5 className="text-xs font-bold text-on-surface">{rem.title}</h5>
+                          <span className="text-[10px] text-amber-700 dark:text-amber-400 font-mono block">{rem.time} &bull; {rem.type}</span>
+                        </div>
                       </div>
-                      <h4 className="font-serif text-base font-bold text-on-surface">{act.name || act.title}</h4>
-                      <p className="text-xs text-secondary leading-relaxed">{act.description}</p>
+                      <button
+                        onClick={() => deleteReminder(trip.id, rem.id)}
+                        className="text-secondary hover:text-error transition p-1"
+                        title="Delete Reminder"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   ))}
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ) : (
+                <p className="text-xs text-secondary italic">No travel reminders set for {selectedDateStr}. Click "+ Add Reminder" to set flight, hotel or ticket alerts!</p>
+              )}
+            </div>
 
-        {/* TAB 3: JOVALAYAK STHAL / TOURIST PLACES EXPLORER */}
-        {viewTab === 'places_view' && (
-          <div className="space-y-6">
-            <h3 className="font-serif text-2xl font-bold text-on-surface border-b border-outline-variant pb-3">
-              All Tourist Places (Jovalayak Sthal) in Planned Cities
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {trip.stops?.flatMap((stop) =>
-                MOCK_ACTIVITIES.filter((act) => act.cityName?.toLowerCase() === stop.cityName.toLowerCase()).map((place) => ({
-                  ...place,
-                  cityName: stop.cityName,
-                  stopId: stop.id
-                }))
-              ).map((place, pIdx) => (
-                <div key={pIdx} className="bg-surface border border-outline-variant rounded-2xl overflow-hidden shadow-paper p-4 space-y-3 flex flex-col justify-between">
-                  <div className="space-y-3">
-                    <img src={place.image} alt={place.name || place.title} className="w-full h-40 object-cover rounded-xl border border-outline-variant" />
-                    <div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-primary block">{place.cityName} &bull; {place.category}</span>
-                      <h4 className="font-serif text-lg font-bold text-on-surface">{place.name || place.title}</h4>
-                      <p className="text-xs text-secondary line-clamp-2 mt-1">{place.description}</p>
-                    </div>
+            {/* 3. WHICH TOURIST PLACES (Jovalayak Sthal) TO VISIT */}
+            <div className="bg-surface border border-outline-variant p-5 rounded-2xl shadow-paper space-y-3">
+              <div className="flex justify-between items-center border-b border-outline-variant pb-2">
+                <h4 className="font-serif text-lg font-bold text-on-surface flex items-center gap-2">
+                  <div className="p-1.5 bg-primary/10 rounded-lg text-primary">
+                    <Landmark className="w-4 h-4" />
                   </div>
+                  <span>Tourist Places (Jovalayak Sthal) in {selectedCityName}</span>
+                </h4>
+              </div>
 
-                  <div className="flex justify-between items-center pt-3 border-t border-outline-variant/60">
-                    <span className="text-xs font-mono font-bold text-on-surface">₹{place.cost}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-40 overflow-y-auto pr-1">
+                {cityAttractions.map((place, pIdx) => (
+                  <div key={pIdx} className="p-2.5 bg-surface-container-low border border-outline-variant rounded-xl flex items-center justify-between gap-2">
+                    <img src={place.image} alt={place.name || place.title} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <h5 className="text-xs font-bold text-on-surface truncate">{place.name || place.title}</h5>
+                      <span className="text-[10px] text-primary font-mono block">₹{place.cost} &bull; {place.duration || '2 hrs'}</span>
+                    </div>
                     <button
                       onClick={() => handleAddAttractionToCalendarDate(place)}
-                      className="px-4 py-2 bg-primary text-white text-xs font-semibold uppercase tracking-wider rounded-xl hover:bg-primary-container transition flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1 bg-primary text-white text-[10px] font-semibold uppercase rounded-lg hover:bg-primary-container transition flex items-center gap-1 cursor-pointer flex-shrink-0"
+                      title="Add to Day Schedule"
                     >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Add to Schedule</span>
+                      <Plus className="w-3 h-3" />
+                      <span>Add</span>
                     </button>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
+
+            {/* 4. WHAT ACTIVITIES TO DO ON THIS DAY */}
+            <div className="bg-surface border border-outline-variant p-5 rounded-2xl shadow-paper space-y-4">
+              <div className="flex justify-between items-center border-b border-outline-variant pb-2">
+                <h4 className="font-serif text-lg font-bold text-on-surface flex items-center gap-2">
+                  <div className="p-1.5 bg-indigo-500/10 rounded-lg text-indigo-500">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <span>Scheduled Activities for {selectedDateStr}</span>
+                </h4>
+                <span className="text-xs font-mono font-bold text-primary">{selectedDayActivities.length} Items</span>
+              </div>
+
+              {selectedDayActivities.length > 0 ? (
+                <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
+                  {selectedDayActivities.map((act, aIdx) => (
+                    <div key={aIdx} className="p-3.5 bg-surface-container-low border border-outline-variant rounded-xl flex justify-between items-start gap-3 hover:border-primary transition">
+                      <div className="space-y-1 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-primary/10 text-primary font-mono text-[10px] font-bold rounded-md">
+                            {act.time || '10:00 AM'}
+                          </span>
+                          <span className="text-[10px] uppercase font-bold text-secondary">{act.category}</span>
+                        </div>
+                        <h5 className="text-xs font-bold text-on-surface">{act.name || act.title}</h5>
+                      </div>
+                      <span className="text-xs font-mono font-bold text-on-surface">₹{act.cost}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 border border-dashed border-outline-variant rounded-xl p-4 space-y-1">
+                  <p className="text-xs text-secondary">No activities scheduled for this date yet.</p>
+                </div>
+              )}
+            </div>
+
           </div>
-        )}
+
+        </div>
 
       </main>
+
+      {/* Add Reminder Modal */}
+      {showReminderModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface border border-outline-variant p-6 rounded-2xl shadow-paper max-w-md w-full space-y-5">
+            <div className="flex justify-between items-center border-b border-outline-variant pb-3">
+              <h3 className="font-serif text-xl font-bold text-on-surface flex items-center gap-2">
+                <Bell className="w-5 h-5 text-amber-500" />
+                <span>Add Travel Reminder</span>
+              </h3>
+              <button onClick={() => setShowReminderModal(false)} className="text-secondary hover:text-on-surface cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateReminderSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-on-surface-variant mb-1 uppercase tracking-wider">Reminder Title *</label>
+                <input
+                  type="text"
+                  value={reminderTitle}
+                  onChange={(e) => setReminderTitle(e.target.value)}
+                  placeholder="e.g. Flight Web Check-in & Boarding Pass"
+                  required
+                  className="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-sm text-on-surface outline-none focus:border-primary"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-on-surface-variant mb-1 uppercase tracking-wider">Date</label>
+                  <input
+                    type="date"
+                    value={selectedDateStr}
+                    onChange={(e) => setSelectedDateStr(e.target.value)}
+                    className="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-xs text-on-surface outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-on-surface-variant mb-1 uppercase tracking-wider">Time</label>
+                  <input
+                    type="text"
+                    value={reminderTime}
+                    onChange={(e) => setReminderTime(e.target.value)}
+                    placeholder="09:00 AM"
+                    className="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-xs text-on-surface outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-on-surface-variant mb-1 uppercase tracking-wider">Reminder Type</label>
+                <select
+                  value={reminderType}
+                  onChange={(e) => setReminderType(e.target.value)}
+                  className="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-xs text-on-surface outline-none"
+                >
+                  <option value="Flight Booking">Flight / Train Booking</option>
+                  <option value="Hotel Check-in">Hotel Check-in / Reservation</option>
+                  <option value="Monument Ticket">Monument / Tour Ticket</option>
+                  <option value="Packing Checklist">Packing & Document Checklist</option>
+                  <option value="General Reminder">General Alert</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 bg-amber-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-amber-600 transition shadow-sm cursor-pointer"
+              >
+                Set Travel Reminder
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Share Trip Modal */}
+      <ShareTripModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} trip={trip} />
+
     </div>
   );
 }

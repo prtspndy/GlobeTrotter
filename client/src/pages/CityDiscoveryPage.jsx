@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MOCK_CITIES, MOCK_ACTIVITIES } from '../data/mockData';
 import { searchGeocodeCity } from '../services/geoapifyService';
-import { MapPin, Compass, Plus, Eye, Check, X, Sparkles, Building } from 'lucide-react';
+import { MapPin, Compass, Plus, Eye, Check, X, Sparkles, Building, Loader2 } from 'lucide-react';
 import { useTrip } from '../context/TripContext';
 
 export default function CityDiscoveryPage() {
@@ -13,8 +13,16 @@ export default function CityDiscoveryPage() {
   const [selectedRegion, setSelectedRegion] = useState('All');
   
   const [cities, setCities] = useState(MOCK_CITIES);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isApiResults, setIsApiResults] = useState(false);
+
+  // Initial mount short loading effect (450ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 450);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Selected City Modal State for "Jovalayak Sthal" (Tourist Places)
   const [selectedCityModal, setSelectedCityModal] = useState(null);
@@ -233,8 +241,26 @@ export default function CityDiscoveryPage() {
           </div>
         </div>
 
-        {/* Cities Grid */}
-        {!loading && filteredCities.length === 0 ? (
+        {/* Cities Grid & Loading States */}
+        {loading ? (
+          <div className="space-y-8">
+            <div className="text-center py-12 space-y-3">
+              <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto" />
+              <p className="text-xs font-mono text-secondary tracking-wider uppercase">
+                Loading City Destinations & Tourist Places...
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <div key={n} className="bg-surface border border-outline-variant/60 rounded-2xl h-80 animate-pulse p-4 space-y-4">
+                  <div className="h-44 bg-surface-container-high rounded-xl w-full" />
+                  <div className="h-6 bg-surface-container-high rounded-md w-3/4" />
+                  <div className="h-4 bg-surface-container-high rounded-md w-1/2" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : filteredCities.length === 0 ? (
           <div className="text-center py-16 bg-surface border border-outline-variant p-8 rounded-2xl space-y-4">
             <span className="material-symbols-outlined text-secondary text-5xl">location_off</span>
             <h3 className="font-serif text-2xl font-bold text-on-surface">No Cities Found</h3>
@@ -243,8 +269,7 @@ export default function CityDiscoveryPage() {
             </p>
           </div>
         ) : (
-          !loading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredCities.map((city) => (
                 <div key={city.id || city.name} className="group bg-surface border border-outline-variant rounded-2xl overflow-hidden shadow-paper hover:border-primary transition flex flex-col justify-between">
                   <div>
@@ -308,7 +333,6 @@ export default function CityDiscoveryPage() {
                 </div>
               ))}
             </div>
-          )
         )}
 
         {/* Tourist Places / Jovalayak Sthal Modal */}

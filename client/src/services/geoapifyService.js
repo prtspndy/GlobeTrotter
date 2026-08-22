@@ -117,16 +117,54 @@ export async function searchPlaces({ lat, lon, category = 'catering', limit = 12
     if (!response.ok) throw new Error(`Geoapify Places error: ${response.statusText}`);
 
     const data = await response.json();
+    const CATEGORY_PHOTO_POOLS = {
+      Sightseeing: [
+        'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=600&q=80'
+      ],
+      'Food & Dining': [
+        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80'
+      ],
+      Culture: [
+        'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1600093463592-8e36ae95ef56?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1514222709107-a180c68d72b4?auto=format&fit=crop&w=600&q=80'
+      ],
+      Adventure: [
+        'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=600&q=80'
+      ],
+      Nature: [
+        'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80'
+      ]
+    };
+
     const places = (data.features || []).map((feature, idx) => {
       const props = feature.properties || {};
+      const actCategory = category !== 'All' ? category : (idx % 2 === 0 ? 'Sightseeing' : 'Food & Dining');
+      const photoPool = CATEGORY_PHOTO_POOLS[actCategory] || CATEGORY_PHOTO_POOLS['Sightseeing'];
+      const dynamicPhoto = photoPool[idx % photoPool.length];
+
       return {
         id: `place-${props.place_id || idx}`,
         title: props.name || props.street || 'Popular Point of Interest',
-        category: category !== 'All' ? category : 'Sightseeing',
+        category: actCategory,
         description: props.formatted || `${props.name || 'Attraction'} located in destination area.`,
         cost: Math.floor(Math.random() * 40) + 10,
         duration: '1.5 hours',
-        image: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=600&q=80',
+        image: dynamicPhoto,
         lat: props.lat,
         lon: props.lon
       };
@@ -175,6 +213,32 @@ export async function calculateRoute(waypoints = []) {
     return result;
   } catch (error) {
     console.warn('Geoapify Routing API fetch failed:', error);
+    return null;
+  }
+}
+
+/**
+ * 4. Reverse Geocode Coordinates to City, State & Country using Geoapify API
+ */
+export async function reverseGeocodeLocation({ lat, lon }) {
+  if (!lat || !lon) return null;
+  try {
+    const url = `${BASE_GEOCODE_URL}/reverse?lat=${lat}&lon=${lon}&apiKey=${API_KEY}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Reverse geocode failed`);
+    const data = await response.json();
+    const item = data.results?.[0];
+    if (item) {
+      return {
+        city: item.city || item.town || item.village || item.suburb || item.county || 'Current Location',
+        state: item.state || '',
+        country: item.country || 'India',
+        formatted: item.formatted || `${item.city || 'Current Location'}, ${item.country}`
+      };
+    }
+    return null;
+  } catch (error) {
+    console.warn('Reverse Geocoding failed:', error);
     return null;
   }
 }

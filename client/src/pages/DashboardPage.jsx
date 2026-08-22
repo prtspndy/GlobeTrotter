@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PlusCircle, Compass, Calendar, DollarSign, Sparkles, MapPin, ArrowRight, Eye, Trash2, Share2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTrip } from '../context/TripContext';
 import { MOCK_CITIES } from '../data/mockData';
+import ShareTripModal from '../components/modals/ShareTripModal';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { trips, deleteTrip } = useTrip();
+  const [activeShareTrip, setActiveShareTrip] = useState(null);
 
   const totalSpent = trips.reduce((acc, t) => {
     const tripExpenses = t.expenses?.reduce((eAcc, e) => eAcc + Number(e.amount), 0) || 0;
@@ -28,7 +30,7 @@ export default function DashboardPage() {
               Good to see you
             </span>
             <h1 className="font-serif text-3xl sm:text-5xl font-bold text-on-surface leading-tight">
-              Ready for your next adventure, {user?.name?.split(' ')[0] || 'Traveler'}?
+              Ready for your next adventure, {user?.name || 'Traveler'}?
             </h1>
             <p className="text-base text-on-surface-variant font-light">
               Your journeys, destinations and itineraries — all in one place.
@@ -60,123 +62,144 @@ export default function DashboardPage() {
           </Link>
 
           <Link
-            to="/discover/destinations"
+            to="/trips"
             className="flex flex-col items-center justify-center gap-3 py-6 border border-outline-variant rounded-sm bg-surface hover:bg-surface-container-low transition text-on-surface shadow-paper"
           >
             <span className="material-symbols-outlined text-primary text-3xl">map</span>
-            <span className="text-xs font-semibold uppercase tracking-wider">Explore cities</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">My trips ({trips.length})</span>
           </Link>
 
           <Link
-            to="/discover/activities"
+            to="/discover/destinations"
             className="flex flex-col items-center justify-center gap-3 py-6 border border-outline-variant rounded-sm bg-surface hover:bg-surface-container-low transition text-on-surface shadow-paper"
           >
-            <span className="material-symbols-outlined text-primary text-3xl">local_activity</span>
-            <span className="text-xs font-semibold uppercase tracking-wider">Find activities</span>
+            <span className="material-symbols-outlined text-primary text-3xl">location_city</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">Destinations</span>
           </Link>
 
           <Link
-            to={featuredTrip ? `/trips/${featuredTrip.id}/calendar` : '/trips'}
+            to="/profile"
             className="flex flex-col items-center justify-center gap-3 py-6 border border-outline-variant rounded-sm bg-surface hover:bg-surface-container-low transition text-on-surface shadow-paper"
           >
-            <span className="material-symbols-outlined text-primary text-3xl">calendar_month</span>
-            <span className="text-xs font-semibold uppercase tracking-wider">View calendar</span>
+            <span className="material-symbols-outlined text-primary text-3xl">manage_accounts</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">Preferences</span>
           </Link>
         </section>
 
-        {/* Featured Next Adventure */}
-        {featuredTrip && (
-          <section className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center bg-surface border border-outline-variant p-6 lg:p-8 rounded-sm shadow-paper">
-            <div className="md:col-span-8 flex flex-col justify-center space-y-6">
-              <div>
-                <span className="font-label-caps text-xs text-secondary uppercase tracking-widest block mb-1">
-                  Next Adventure
-                </span>
-                <h2 className="font-serif text-3xl font-bold text-on-surface">
-                  {featuredTrip.title}
-                </h2>
-              </div>
-
-              {/* Dynamic Route Visualization */}
-              <div className="flex items-center gap-2 overflow-x-auto py-2">
-                {featuredTrip.stops?.map((stop, idx) => (
-                  <React.Fragment key={stop.id || idx}>
-                    <div className="flex flex-col items-center text-center min-w-[70px]">
-                      <span className="text-xs font-semibold text-on-surface">{stop.cityName}</span>
-                    </div>
-                    {idx < featuredTrip.stops.length - 1 && (
-                      <div className="flex-1 min-w-[50px] border-t-2 border-dashed border-primary relative my-auto">
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 material-symbols-outlined text-primary text-sm bg-surface px-1">
-                          {idx % 2 === 0 ? 'flight' : 'directions_railway'}
-                        </span>
-                      </div>
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
-
-              <div className="flex gap-8 border-l-2 border-primary pl-4">
-                <div>
-                  <p className="font-label-caps text-xs text-secondary uppercase mb-1">Dates</p>
-                  <p className="text-sm font-medium text-on-surface">{featuredTrip.startDate} — {featuredTrip.endDate}</p>
-                </div>
-                <div>
-                  <p className="font-label-caps text-xs text-secondary uppercase mb-1">Destinations</p>
-                  <p className="text-sm font-medium text-on-surface">{featuredTrip.stops?.length || 0} stops planned</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 pt-2">
-                <Link
-                  to={`/trips/${featuredTrip.id}`}
-                  className="border border-on-surface text-on-surface hover:bg-surface-container-low text-xs font-semibold uppercase tracking-wider px-6 py-2.5 rounded-sm transition"
-                >
-                  Continue planning
-                </Link>
-                <Link
-                  to={`/globe/trip/${featuredTrip.shareId}`}
-                  className="bg-surface-container border border-outline-variant text-tertiary hover:bg-tertiary hover:text-white text-xs font-semibold uppercase tracking-wider px-5 py-2.5 rounded-sm transition flex items-center gap-1.5"
-                >
-                  <span className="material-symbols-outlined text-base">share</span>
-                  Share
-                </Link>
-              </div>
+        {/* Dynamic Metric Highlights */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-surface border border-outline-variant p-6 rounded-sm shadow-paper space-y-2">
+            <div className="flex justify-between items-center text-secondary">
+              <span className="font-label-caps text-xs uppercase tracking-widest font-semibold">Active Trips</span>
+              <span className="material-symbols-outlined">flight_takeoff</span>
             </div>
+            <p className="font-serif text-3xl font-bold text-on-surface">{trips.length}</p>
+            <span className="text-[11px] text-secondary">Broadsheet itineraries planned</span>
+          </div>
 
-            <div className="md:col-span-4 h-[280px]">
-              <img
-                src={featuredTrip.coverImage}
-                alt={featuredTrip.title}
-                className="w-full h-full object-cover rounded-sm border border-outline-variant"
-              />
+          <div className="bg-surface border border-outline-variant p-6 rounded-sm shadow-paper space-y-2">
+            <div className="flex justify-between items-center text-secondary">
+              <span className="font-label-caps text-xs uppercase tracking-widest font-semibold">Cities Scheduled</span>
+              <span className="material-symbols-outlined">location_city</span>
+            </div>
+            <p className="font-serif text-3xl font-bold text-on-surface">{totalDestinations}</p>
+            <span className="text-[11px] text-secondary">Stops in your multi-city routes</span>
+          </div>
+
+          <div className="bg-surface border border-outline-variant p-6 rounded-sm shadow-paper space-y-2">
+            <div className="flex justify-between items-center text-secondary">
+              <span className="font-label-caps text-xs uppercase tracking-widest font-semibold">Total Expenses</span>
+              <span className="material-symbols-outlined">payments</span>
+            </div>
+            <p className="font-serif text-3xl font-bold text-on-surface">${totalSpent.toLocaleString()}</p>
+            <span className="text-[11px] text-secondary">Estimated total travel spend</span>
+          </div>
+        </section>
+
+        {/* Featured Trip Highlight */}
+        {featuredTrip && (
+          <section className="bg-surface border border-outline-variant rounded-sm overflow-hidden shadow-paper">
+            <div className="grid grid-cols-1 lg:grid-cols-12">
+              <div className="lg:col-span-7 relative min-h-[300px] bg-on-surface">
+                <img
+                  src={featuredTrip.coverImage}
+                  alt={featuredTrip.title}
+                  className="w-full h-full object-cover opacity-80"
+                />
+                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur px-3 py-1 text-xs text-white uppercase tracking-wider font-semibold border border-white/20">
+                  Featured Journey
+                </div>
+              </div>
+
+              <div className="lg:col-span-5 p-8 flex flex-col justify-between space-y-6">
+                <div className="space-y-3">
+                  <span className="font-label-caps text-xs text-primary uppercase tracking-widest font-semibold block">
+                    {featuredTrip.startDate} — {featuredTrip.endDate}
+                  </span>
+                  <h2 className="font-serif text-3xl font-bold text-on-surface">
+                    {featuredTrip.title}
+                  </h2>
+                  <p className="text-xs text-secondary leading-relaxed">
+                    {featuredTrip.description}
+                  </p>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t border-outline-variant">
+                  <div className="flex justify-between items-center text-xs font-mono">
+                    <span className="text-secondary">Route Stops:</span>
+                    <span className="font-semibold text-on-surface">
+                      {featuredTrip.stops?.map(s => s.cityName).join(' → ')}
+                    </span>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Link
+                      to={`/trips/${featuredTrip.id}`}
+                      className="flex-1 text-center bg-primary hover:bg-primary-container text-white font-semibold text-xs uppercase tracking-wider py-3 rounded-sm transition shadow-paper"
+                    >
+                      Open Itinerary
+                    </Link>
+                    <button
+                      onClick={() => setActiveShareTrip(featuredTrip)}
+                      className="px-4 py-3 border border-outline-variant text-on-surface hover:border-primary font-semibold text-xs uppercase tracking-wider rounded-sm transition flex items-center justify-center gap-1 cursor-pointer"
+                      title="Share trip plan"
+                    >
+                      <Share2 className="w-4 h-4 text-primary" />
+                      <span>Share</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
         )}
 
-        {/* Trips Catalog Section */}
+        {/* Recent Journeys Section */}
         <section className="space-y-6">
-          <div className="flex justify-between items-end border-b border-outline-variant pb-3">
-            <div>
-              <h2 className="font-serif text-2xl font-bold text-on-surface">Your Trips</h2>
-              <p className="text-xs text-secondary">Manage and customize your itineraries</p>
-            </div>
-            <Link to="/trips" className="text-xs font-semibold uppercase tracking-wider text-primary hover:underline">
-              View all ({trips.length})
+          <div className="flex justify-between items-center border-b border-outline-variant pb-3">
+            <h2 className="font-serif text-2xl font-bold text-on-surface">
+              Recent Journeys
+            </h2>
+            <Link to="/trips" className="text-xs font-semibold text-primary hover:underline uppercase tracking-wider">
+              View All Trips &rarr;
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {trips.map((trip) => {
-              const tripExpensesTotal = trip.expenses?.reduce((acc, e) => acc + Number(e.amount), 0) || 0;
-              const budgetPercent = Math.min(100, Math.round((tripExpensesTotal / (trip.totalBudget || 1)) * 100));
+              const tripExpenses = trip.expenses?.reduce((acc, e) => acc + Number(e.amount), 0) || 0;
+              const budgetPercent = Math.min(100, Math.round((tripExpenses / (trip.totalBudget || 2000)) * 100));
 
               return (
-                <div key={trip.id} className="group border border-outline-variant rounded-sm bg-surface hover:shadow-paper transition overflow-hidden flex flex-col">
-                  <div className="h-48 relative overflow-hidden">
+                <div
+                  key={trip.id}
+                  className="bg-surface border border-outline-variant rounded-sm overflow-hidden shadow-paper hover:border-primary transition flex flex-col justify-between group"
+                >
+                  <div className="relative h-44 overflow-hidden bg-on-surface">
                     <img
                       src={trip.coverImage}
                       alt={trip.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500 opacity-80"
                     />
                     <div className="absolute top-3 right-3 bg-surface/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-on-surface border border-outline-variant rounded-sm">
                       {trip.visibility}
@@ -191,13 +214,22 @@ export default function DashboardPage() {
                             {trip.title}
                           </Link>
                         </h3>
-                        <button
-                          onClick={() => deleteTrip(trip.id)}
-                          className="text-secondary hover:text-error transition p-1"
-                          title="Delete trip"
-                        >
-                          <span className="material-symbols-outlined text-lg">delete</span>
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setActiveShareTrip(trip)}
+                            className="text-tertiary hover:text-primary transition p-1 cursor-pointer"
+                            title="Share trip plan"
+                          >
+                            <Share2 className="w-4 h-4 text-primary" />
+                          </button>
+                          <button
+                            onClick={() => deleteTrip(trip.id)}
+                            className="text-secondary hover:text-error transition p-1 cursor-pointer"
+                            title="Delete trip"
+                          >
+                            <span className="material-symbols-outlined text-lg">delete</span>
+                          </button>
+                        </div>
                       </div>
                       <p className="text-xs text-secondary font-medium">
                         {trip.startDate} — {trip.endDate}
@@ -230,6 +262,16 @@ export default function DashboardPage() {
         </section>
 
       </div>
+
+      {/* Share Trip Modal */}
+      {activeShareTrip && (
+        <ShareTripModal
+          isOpen={!!activeShareTrip}
+          onClose={() => setActiveShareTrip(null)}
+          trip={activeShareTrip}
+        />
+      )}
+
     </div>
   );
 }

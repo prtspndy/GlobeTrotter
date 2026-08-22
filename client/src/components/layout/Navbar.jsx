@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Sparkles, LogOut, PlusCircle, ShieldCheck, Menu, X, Sun, Moon, Calendar } from 'lucide-react';
+import { Sparkles, LogOut, PlusCircle, ShieldCheck, Menu, X, Sun, Moon, MapPin } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useUserLocation } from '../../hooks/useUserLocation';
 import AITripModal from '../modals/AITripModal';
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const { isDarkMode, toggleTheme } = useTheme();
+  const { location: userLoc } = useUserLocation();
   const location = useLocation();
   const navigate = useNavigate();
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -22,7 +24,7 @@ export default function Navbar() {
           
           {/* Logo & Brand Monogram */}
           <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 bg-primary text-white flex items-center justify-center font-serif text-xl font-bold tracking-tight rounded-sm shadow-paper group-hover:bg-primary-container transition">
+            <div className="w-10 h-10 bg-primary text-white flex items-center justify-center font-serif text-xl font-bold tracking-tight rounded-xl shadow-paper group-hover:bg-primary-container transition">
               GT
             </div>
             <div>
@@ -84,6 +86,18 @@ export default function Navbar() {
           {/* Action CTAs & Auth Controls */}
           <div className="hidden md:flex items-center space-x-4">
             
+            {/* Live Detected User Location Badge */}
+            {userLoc?.city && (
+              <Link
+                to="/discover/activities"
+                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low border border-outline-variant/70 rounded-xl text-xs font-mono font-semibold text-primary hover:border-primary transition"
+                title={`Detected Location: ${userLoc.formatted}`}
+              >
+                <MapPin className="w-3.5 h-3.5 text-primary animate-bounce" />
+                <span>{userLoc.city}</span>
+              </Link>
+            )}
+
             {/* Dark / Light Theme Toggle Button */}
             <button
               onClick={toggleTheme}
@@ -97,7 +111,7 @@ export default function Navbar() {
               <>
                 <button
                   onClick={() => setIsAiModalOpen(true)}
-                  className="flex items-center space-x-2 px-3.5 py-2 text-xs font-semibold uppercase tracking-wider bg-surface-container border border-primary/40 text-primary rounded-sm hover:bg-primary hover:text-white transition shadow-sm cursor-pointer"
+                  className="flex items-center space-x-2 px-3.5 py-2 text-xs font-semibold uppercase tracking-wider bg-surface-container border border-primary/40 text-primary rounded-xl hover:bg-primary hover:text-white transition shadow-sm cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4 text-primary animate-pulse" />
                   <span>AI Architect</span>
@@ -105,7 +119,7 @@ export default function Navbar() {
 
                 <Link
                   to="/trips/create"
-                  className="flex items-center space-x-2 px-4 py-2 text-xs font-semibold uppercase tracking-wider bg-primary text-white rounded-sm hover:bg-primary-container transition shadow-sm"
+                  className="flex items-center space-x-2 px-4 py-2 text-xs font-semibold uppercase tracking-wider bg-primary text-white rounded-xl hover:bg-primary-container transition shadow-sm"
                 >
                   <PlusCircle className="w-4 h-4" />
                   <span>Plan Trip</span>
@@ -140,7 +154,7 @@ export default function Navbar() {
                 </Link>
                 <Link 
                   to="/register"
-                  className="px-4 py-2 text-xs font-semibold uppercase tracking-wider bg-primary text-white rounded-sm hover:bg-primary-container transition shadow-sm"
+                  className="px-4 py-2 text-xs font-semibold uppercase tracking-wider bg-primary text-white rounded-xl hover:bg-primary-container transition shadow-sm"
                 >
                   Join GlobeTrotter
                 </Link>
@@ -191,7 +205,7 @@ export default function Navbar() {
                 <div className="pt-3 border-t border-outline-variant/60 flex flex-col space-y-2">
                   <button
                     onClick={() => { setIsMobileMenuOpen(false); setIsAiModalOpen(true); }}
-                    className="w-full flex items-center justify-center space-x-2 py-2 text-xs font-semibold uppercase bg-surface-container border border-primary text-primary rounded-sm"
+                    className="w-full flex items-center justify-center space-x-2 py-2 text-xs font-semibold uppercase bg-surface-container border border-primary text-primary rounded-xl"
                   >
                     <Sparkles className="w-4 h-4" />
                     <span>AI Trip Architect</span>
@@ -199,7 +213,7 @@ export default function Navbar() {
                   <Link
                     to="/trips/create"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full text-center py-2 text-xs font-semibold uppercase bg-primary text-white rounded-sm"
+                    className="w-full text-center py-2 text-xs font-semibold uppercase bg-primary text-white rounded-xl"
                   >
                     Plan New Trip
                   </Link>
@@ -213,8 +227,8 @@ export default function Navbar() {
               </>
             ) : (
               <div className="space-y-2">
-                <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="block text-center py-2 text-sm font-semibold border border-outline rounded-sm">Log In</Link>
-                <Link to="/register" onClick={() => setIsMobileMenuOpen(false)} className="block text-center py-2 text-sm font-semibold bg-primary text-white rounded-sm">Join GlobeTrotter</Link>
+                <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="block text-center py-2 text-sm font-semibold border border-outline rounded-xl">Log In</Link>
+                <Link to="/register" onClick={() => setIsMobileMenuOpen(false)} className="block text-center py-2 text-sm font-semibold bg-primary text-white rounded-xl">Join GlobeTrotter</Link>
               </div>
             )}
           </div>

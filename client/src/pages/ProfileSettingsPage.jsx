@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Camera, Sun, Moon, Check, Save, User, Mail, Phone, MapPin, Globe, Shield, Trash2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTrip } from '../context/TripContext';
@@ -11,10 +11,10 @@ export default function ProfileSettingsPage() {
   const { isDarkMode, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
-  // Profile Form States
+  // Profile Form States initialized from authenticated user
   const [avatar, setAvatar] = useState(user?.avatar || "/default_avatar.png");
-  const [name, setName] = useState(user?.name || 'Prashant Sharma');
-  const [email, setEmail] = useState(user?.email || 'prashant.sharma@globetrotter.com');
+  const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '+91 98765 43210');
   const [homeCity, setHomeCity] = useState(user?.homeCity || 'Mumbai, India');
   const [currency, setCurrency] = useState(user?.currency || 'INR');
@@ -26,6 +26,17 @@ export default function ProfileSettingsPage() {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  // Live Sync User Data when Auth State or Registered User changes
+  useEffect(() => {
+    if (user) {
+      if (user.name) setName(user.name);
+      if (user.email) setEmail(user.email);
+      if (user.avatar) setAvatar(user.avatar);
+      if (user.phone) setPhone(user.phone);
+      if (user.homeCity) setHomeCity(user.homeCity);
+    }
+  }, [user]);
 
   const totalStops = trips.reduce((acc, t) => acc + (t.stops?.length || 0), 0);
   const totalActivities = trips.reduce((acc, t) => {

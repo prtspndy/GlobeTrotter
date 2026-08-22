@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, UserPlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [needsRegister, setNeedsRegister] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const from = location.state?.from?.pathname || '/dashboard';
@@ -19,13 +20,18 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setNeedsRegister(false);
     setLoading(true);
 
     try {
       await login(email, password);
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
+      const errMsg = err.message || err.response?.data?.message || 'Invalid email or password. Please try again.';
+      setError(errMsg);
+      if (errMsg.toLowerCase().includes('create an account') || errMsg.toLowerCase().includes('no account')) {
+        setNeedsRegister(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -34,7 +40,7 @@ export default function LoginPage() {
   return (
     <div className="w-full flex-grow flex flex-col lg:flex-row items-stretch bg-background text-on-surface antialiased min-h-[calc(100vh-80px)]">
       
-      {/* Left Side: Editorial Image & Branding (Fills 100% Height) */}
+      {/* Left Side: Editorial Image & Branding */}
       <div className="hidden lg:flex lg:w-[48%] relative flex-col justify-between overflow-hidden self-stretch min-h-full">
         <img
           src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=1200&q=80"
@@ -47,7 +53,7 @@ export default function LoginPage() {
         <div className="relative z-10 p-16 flex flex-col gap-8 h-full justify-between text-white">
           <div>
             <Link to="/" className="inline-flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary text-white flex items-center justify-center font-serif text-xl font-bold rounded-sm">
+              <div className="w-10 h-10 bg-primary text-white flex items-center justify-center font-serif text-xl font-bold rounded-xl shadow-paper">
                 GT
               </div>
               <span className="font-serif text-2xl font-bold uppercase tracking-tight text-white">
@@ -58,27 +64,27 @@ export default function LoginPage() {
 
           <div className="max-w-md">
             <span className="font-label-caps text-xs text-primary-fixed tracking-[0.2em] uppercase mb-4 block opacity-90 font-semibold">
-              YOUR JOURNEY, BEAUTIFULLY ORGANIZED
+              EXPLORE THE UNKNOWN
             </span>
             <h1 className="font-serif text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-              Every great journey starts with a plan.
+              Every trip begins with a single step.
             </h1>
             <p className="text-base text-surface-container-low/90 leading-relaxed font-light">
-              Your itineraries, destinations, activities and budgets — all in one place.
+              Access your saved multi-city travel journeys, day-wise itineraries, and expense analytics.
             </p>
           </div>
 
           <div className="flex items-center gap-3 text-xs font-mono text-surface-container-high/80 w-full max-w-sm border-t border-white/20 pt-4">
-            <span>Rome</span>
+            <span>Mumbai</span>
             <div className="flex-grow border-t border-dashed border-primary-container opacity-60" />
-            <span>Florence</span>
+            <span>Jaipur</span>
             <div className="flex-grow border-t border-dashed border-primary-container opacity-60" />
-            <span>Paris</span>
+            <span>Varanasi</span>
           </div>
         </div>
       </div>
 
-      {/* Right Side: Improved Modern Login Form Canvas */}
+      {/* Right Side: Modern Login Form Canvas */}
       <div className="w-full lg:w-[52%] flex flex-col justify-center items-center p-8 lg:p-16 bg-surface self-stretch">
         <div className="w-full max-w-md flex flex-col gap-8">
           
@@ -91,10 +97,28 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {/* Account Not Found Warning Banner */}
           {error && (
-            <div className="p-4 bg-error-container/60 border border-error/40 text-on-error-container text-xs rounded-lg flex items-center gap-2">
-              <span className="material-symbols-outlined text-error text-base">error</span>
-              <span>{error}</span>
+            <div className={`p-4 rounded-xl border space-y-3 ${
+              needsRegister 
+                ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 text-amber-900 dark:text-amber-200' 
+                : 'bg-error-container/60 border-error/40 text-on-error-container'
+            }`}>
+              <div className="flex items-center gap-2 text-xs font-semibold">
+                <span className="material-symbols-outlined text-base">
+                  {needsRegister ? 'warning' : 'error'}
+                </span>
+                <span>{error}</span>
+              </div>
+              {needsRegister && (
+                <Link
+                  to="/register"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-xs font-semibold uppercase tracking-wider rounded-xl hover:bg-primary-container transition shadow-sm"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Create Account First</span>
+                </Link>
+              )}
             </div>
           )}
 
@@ -111,14 +135,14 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
+                  placeholder="enter a email."
                   required
                   className="w-full h-[52px] bg-surface-container-low border border-outline-variant rounded-xl pl-12 pr-4 text-on-surface text-sm font-medium placeholder-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 hover:border-outline transition-all duration-200"
                 />
               </div>
             </div>
 
-            {/* PASSWORD FIELD WITH FORGOT PASSWORD & VISIBILITY TOGGLE */}
+            {/* PASSWORD FIELD */}
             <div className="space-y-2 group">
               <div className="flex justify-between items-center">
                 <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
@@ -158,33 +182,29 @@ export default function LoginPage() {
               {loading ? (
                 <>
                   <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
-                  <span>Authenticating...</span>
+                  <span>Logging in...</span>
                 </>
               ) : (
                 <>
-                  <span>Sign In</span>
+                  <span>Log in</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
 
-          <div className="flex items-center my-1">
-            <div className="flex-grow border-t border-outline-variant" />
-            <span className="px-3 text-xs uppercase tracking-widest text-outline font-semibold">Or</span>
-            <div className="flex-grow border-t border-outline-variant" />
-          </div>
-
-          <div className="text-center text-xs text-secondary">
-            Don't have an account?{' '}
-            <Link to="/register" className="font-semibold text-primary hover:underline">
-              Join GlobeTrotter
-            </Link>
+          {/* SIGNUP LINK FOOTER */}
+          <div className="text-center border-t border-outline-variant/60 pt-6">
+            <p className="text-sm text-on-surface-variant font-medium">
+              Don't have an account yet?{' '}
+              <Link to="/register" className="font-bold text-primary hover:underline ml-1">
+                Create an account
+              </Link>
+            </p>
           </div>
 
         </div>
       </div>
-
     </div>
   );
 }

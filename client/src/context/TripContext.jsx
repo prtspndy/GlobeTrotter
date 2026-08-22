@@ -201,6 +201,38 @@ export const TripProvider = ({ children }) => {
     }));
   };
 
+  const addReminder = (tripId, reminderData) => {
+    setTrips(prev => prev.map(t => {
+      if (t.id === tripId) {
+        const newReminder = {
+          id: `rem-${Date.now()}`,
+          title: reminderData.title || "Travel Reminder",
+          date: reminderData.date || new Date().toISOString().split('T')[0],
+          time: reminderData.time || "09:00 AM",
+          type: reminderData.type || "Flight",
+          completed: false
+        };
+        return {
+          ...t,
+          reminders: [newReminder, ...(t.reminders || [])]
+        };
+      }
+      return t;
+    }));
+  };
+
+  const deleteReminder = (tripId, reminderId) => {
+    setTrips(prev => prev.map(t => {
+      if (t.id === tripId) {
+        return {
+          ...t,
+          reminders: (t.reminders || []).filter(r => r.id !== reminderId)
+        };
+      }
+      return t;
+    }));
+  };
+
   const copyPublicTrip = (shareId) => {
     const originalTrip = trips.find(t => t.shareId === shareId || t.id === shareId) || INITIAL_TRIPS[0];
     const clonedTrip = {
@@ -359,6 +391,8 @@ export const TripProvider = ({ children }) => {
       deleteActivity,
       addExpense,
       deleteExpense,
+      addReminder,
+      deleteReminder,
       copyPublicTrip,
       generateAITrip
     }}>
