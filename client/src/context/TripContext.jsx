@@ -71,35 +71,46 @@ export const TripProvider = ({ children }) => {
     }
   };
 
-  const addCityStop = (tripId, cityId) => {
-    const city = MOCK_CITIES.find(c => c.id === cityId) || MOCK_CITIES[0];
+  const addCityStop = (tripId, cityData) => {
+    let cityName = typeof cityData === 'string' ? cityData : (cityData.cityName || cityData.name);
+    let country = typeof cityData === 'object' ? (cityData.country || 'India') : 'India';
+    let image = typeof cityData === 'object' ? cityData.image : null;
+    
+    const cityMatch = MOCK_CITIES.find(c => c.id === cityData || c.name.toLowerCase() === (cityName || '').toLowerCase());
+    if (cityMatch) {
+      cityName = cityMatch.name;
+      country = cityMatch.country || country;
+      image = image || cityMatch.image;
+    }
+    
+    if (!image) {
+      image = 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=800&q=80';
+    }
+
     const newStop = {
       id: `stop-${Date.now()}`,
-      cityId: city.id,
-      cityName: city.name,
-      country: city.country,
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
-      days: [
-        {
-          dayNumber: 1,
-          date: new Date().toISOString().split('T')[0],
-          notes: `Exploring ${city.name}`,
-          activities: []
-        }
-      ]
+      cityName: cityName || 'New City',
+      country: country || 'India',
+      image,
+      lat: typeof cityData === 'object' ? (cityData.lat || 18.922) : 18.922,
+      lon: typeof cityData === 'object' ? (cityData.lon || 72.8347) : 72.8347,
+      arrivalDate: (typeof cityData === 'object' && cityData.arrivalDate) ? cityData.arrivalDate : new Date().toISOString().split('T')[0],
+      departureDate: (typeof cityData === 'object' && cityData.departureDate) ? cityData.departureDate : new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
+      activities: (typeof cityData === 'object' && Array.isArray(cityData.activities)) ? cityData.activities : []
     };
 
     setTrips(prev => prev.map(t => {
       if (t.id === tripId) {
         return {
           ...t,
-          stops: [...t.stops, newStop]
+          stops: [...(t.stops || []), newStop]
         };
       }
       return t;
     }));
   };
+
+  const addStopToTrip = addCityStop;
 
   const addActivityToDay = (tripId, stopId, dayNumber, activityData) => {
     setTrips(prev => prev.map(t => {
@@ -300,6 +311,36 @@ export const TripProvider = ({ children }) => {
     }));
   };
 
+  const addActivityToStop = (tripId, stopId, activityData) => {
+    const newActivity = {
+      id: `act-${Date.now()}`,
+      title: activityData.title || activityData.name || "Custom Scheduled Activity",
+      time: activityData.time || "10:00 AM",
+      category: activityData.category || "Sightseeing",
+      cost: Number(activityData.cost) || 0,
+      duration: activityData.duration || "2 hours",
+      description: activityData.description || "Scheduled custom experience."
+    };
+
+    setTrips(prev => prev.map(t => {
+      if (t.id === tripId) {
+        return {
+          ...t,
+          stops: t.stops ? t.stops.map(s => {
+            if (s.id === stopId) {
+              return {
+                ...s,
+                activities: [...(s.activities || []), newActivity]
+              };
+            }
+            return s;
+          }) : []
+        };
+      }
+      return t;
+    }));
+  };
+
   return (
     <TripContext.Provider value={{
       trips,
@@ -310,8 +351,10 @@ export const TripProvider = ({ children }) => {
       updateTrip,
       deleteTrip,
       addCityStop,
+      addStopToTrip,
       removeStopFromTrip,
       addActivityToDay,
+      addActivityToStop,
       removeActivityFromStop,
       deleteActivity,
       addExpense,

@@ -29,10 +29,12 @@ const CITY_PHOTO_MAP = {
   leh: 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?auto=format&fit=crop&w=800&q=80',
   manali: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80',
   rishikesh: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=800&q=80',
-  amritsar: 'https://images.unsplash.com/photo-1514222709107-a180c68d72b4?auto=format&fit=crop&w=800&q=80',
-  hampi: 'https://images.unsplash.com/photo-1600100395938-42207b8b2e10?auto=format&fit=crop&w=800&q=80',
+  amritsar: 'https://images.unsplash.com/photo-1588097281266-310cead47879?auto=format&fit=crop&w=800&q=80',
+  hampi: 'https://images.unsplash.com/photo-1620766182966-c6eb5ed2b788?auto=format&fit=crop&w=800&q=80',
+  mysuru: 'https://images.unsplash.com/photo-1600093463592-8e36ae95ef56?auto=format&fit=crop&w=800&q=80',
+  mysore: 'https://images.unsplash.com/photo-1600093463592-8e36ae95ef56?auto=format&fit=crop&w=800&q=80',
   srinagar: 'https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=800&q=80',
-  jodhpur: 'https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=800&q=80',
+  jodhpur: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80',
   jaisalmer: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80',
   tokyo: '/tokyo_city.jpg',
   rome: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80',
@@ -59,78 +61,74 @@ export async function searchCities(query = '') {
   }
 
   try {
-    const url = `${BASE_GEOCODE_URL}/search?text=${encodeURIComponent(query)}&type=city&format=json&apiKey=${API_KEY}`;
+    const url = `${BASE_GEOCODE_URL}/search?text=${encodeURIComponent(query)}&type=city&limit=10&apiKey=${API_KEY}`;
     const response = await fetch(url);
-    if (!response.ok) throw new Error(`Geoapify Geocode error: ${response.statusText}`);
+    if (!response.ok) throw new Error(`Geoapify error: ${response.statusText}`);
 
     const data = await response.json();
     const results = (data.results || []).map((item) => ({
-      id: item.place_id || `geo-${item.lat}-${item.lon}`,
-      name: item.city || item.name || item.formatted?.split(',')[0] || query,
-      country: item.country || '',
-      countryCode: item.country_code?.toUpperCase() || '',
+      id: `geo-${item.place_id || Math.random().toString(36).substring(2, 9)}`,
+      name: item.city || item.name || item.formatted,
+      country: item.country || 'Global',
+      state: item.state || item.county || '',
       lat: item.lat,
       lon: item.lon,
-      region: item.state || item.region || item.country || 'Global',
-      costIndex: item.country_code === 'US' || item.country_code === 'CH' ? 'High' : 'Moderate',
-      popularity: 88,
-      description: item.formatted || `Explore ${item.city || query}, ${item.country || ''}.`,
-      image: getCityPhoto(item.city || item.name || query),
-      placeId: item.place_id
+      image: getCityPhoto(item.city || item.name || ''),
+      description: `Discovered destination located in ${item.state ? item.state + ', ' : ''}${item.country}. Coordinates: ${item.lat?.toFixed(2)}°, ${item.lon?.toFixed(2)}°.`,
+      costIndex: 'Moderate',
+      popularity: 85
     }));
 
-    // Deduplicate by name
-    const uniqueCities = Array.from(new Map(results.map((c) => [c.name.toLowerCase(), c])).values());
-    cache.cities.set(cacheKey, uniqueCities);
-    return uniqueCities;
+    cache.cities.set(cacheKey, results);
+    return results;
   } catch (error) {
-    console.warn('Geoapify Geocode API fetch failed:', error);
+    console.warn('Geoapify Geocoding API fetch failed:', error);
     return [];
   }
 }
 
+export const searchGeocodeCity = searchCities;
+
 /**
- * 2. Search Places / Activities using Geoapify Places API
+ * 2. Search Points of Interest / Activities near Coordinates using Geoapify Places API
  */
-export async function searchPlaces({ lat, lon, category = 'tourism', limit = 12 }) {
+export async function searchPlaces({ lat, lon, category = 'catering', limit = 12 }) {
   if (!lat || !lon) return [];
 
-  const categoryMap = {
-    Sightseeing: 'tourism.sights,tourism.attraction',
-    Culture: 'entertainment.museum,heritage',
+  const categoryParamMap = {
+    Sightseeing: 'tourism.sights,heritage,building.historic',
     'Food & Dining': 'catering.restaurant,catering.cafe',
-    Adventure: 'leisure.park,sport',
-    Nature: 'leisure.park,natural',
-    All: 'tourism,entertainment,catering,leisure'
+    Culture: 'entertainment.museum,heritage',
+    Adventure: 'activity.sport,natural',
+    Nature: 'natural.forest,natural.mountain,leisure.park',
+    All: 'tourism,heritage,catering,leisure'
   };
 
-  const geoCategory = categoryMap[category] || 'tourism,entertainment';
-  const cacheKey = `${lat.toFixed(2)},${lon.toFixed(2)},${geoCategory}`;
+  const categories = categoryParamMap[category] || categoryParamMap['All'];
+  const cacheKey = `${lat}_${lon}_${categories}`;
 
   if (cache.places.has(cacheKey)) {
     return cache.places.get(cacheKey);
   }
 
   try {
-    const url = `${BASE_PLACES_URL}?categories=${geoCategory}&filter=circle:${lon},${lat},15000&limit=${limit}&apiKey=${API_KEY}`;
+    const url = `${BASE_PLACES_URL}?categories=${categories}&filter=circle:${lon},${lat},15000&limit=${limit}&apiKey=${API_KEY}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error(`Geoapify Places error: ${response.statusText}`);
 
     const data = await response.json();
-    const places = (data.features || []).map((feat, idx) => {
-      const props = feat.properties || {};
+    const places = (data.features || []).map((feature, idx) => {
+      const props = feature.properties || {};
       return {
-        id: props.place_id || `place-${props.lat}-${props.lon}-${idx}`,
-        title: props.name || props.formatted?.split(',')[0] || 'Local Attraction',
+        id: `place-${props.place_id || idx}`,
+        title: props.name || props.street || 'Popular Point of Interest',
         category: category !== 'All' ? category : 'Sightseeing',
-        time: `${9 + (idx % 6)}:00 ${idx % 2 === 0 ? 'AM' : 'PM'}`,
-        duration: `${1 + (idx % 3)} hours`,
-        cost: 20 + (idx % 4) * 15,
+        description: props.formatted || `${props.name || 'Attraction'} located in destination area.`,
+        cost: Math.floor(Math.random() * 40) + 10,
+        duration: '1.5 hours',
+        image: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=600&q=80',
         lat: props.lat,
-        lon: props.lon,
-        address: props.formatted || props.address_line2 || '',
-        description: props.formatted || `Featured place in ${props.city || 'destination'}.`,
-        placeId: props.place_id
+        lon: props.lon
       };
     });
 
@@ -143,11 +141,9 @@ export async function searchPlaces({ lat, lon, category = 'tourism', limit = 12 
 }
 
 /**
- * 3. Calculate Route Distance & Time using Geoapify Routing API
+ * 3. Calculate Travel Distance and Route Duration using Geoapify Routing API
  */
 export async function calculateRoute(waypoints = []) {
-  if (waypoints.length < 2) return null;
-
   const validWaypoints = waypoints.filter((w) => w.lat && w.lon);
   if (validWaypoints.length < 2) return null;
 
