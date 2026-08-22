@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { TripProvider } from './context/TripContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
@@ -26,37 +27,39 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 
 export default function App() {
   return (
-    <AuthProvider>
-      <TripProvider>
-        <BrowserRouter>
-          <div className="flex flex-col min-h-screen bg-background text-on-surface font-sans">
-            <Navbar />
-            <main className="flex-grow flex flex-col">
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<SignupPage />} />
-                <Route path="/signup" element={<SignupPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/verify-email" element={<VerifyEmailPage />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/trips" element={<MyTripsPage />} />
-                <Route path="/trips/create" element={<CreateTripPage />} />
-                <Route path="/trips/:id" element={<ItineraryBuilderPage />} />
-                <Route path="/trips/:id/view" element={<ItineraryViewPage />} />
-                <Route path="/trips/:id/budget" element={<BudgetDashboardPage />} />
-                <Route path="/trips/:id/calendar" element={<CalendarTimelinePage />} />
-                <Route path="/discover/destinations" element={<CityDiscoveryPage />} />
-                <Route path="/discover/activities" element={<ActivityDiscoveryPage />} />
-                <Route path="/globe/trip/:shareId" element={<PublicTripPage />} />
-                <Route path="/profile" element={<ProfileSettingsPage />} />
-                <Route path="/admin" element={<AdminDashboardPage />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        </BrowserRouter>
-      </TripProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <TripProvider>
+          <BrowserRouter>
+            <div className="flex flex-col min-h-screen bg-background text-on-surface font-sans">
+              <Navbar />
+              <main className="flex-grow flex flex-col">
+                <Routes>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<SignupPage />} />
+                  <Route path="/signup" element={<SignupPage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                  <Route path="/verify-email" element={<VerifyEmailPage />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/trips" element={<MyTripsPage />} />
+                  <Route path="/trips/create" element={<CreateTripPage />} />
+                  <Route path="/trips/:id" element={<ItineraryBuilderPage />} />
+                  <Route path="/trips/:id/view" element={<ItineraryViewPage />} />
+                  <Route path="/trips/:id/budget" element={<BudgetDashboardPage />} />
+                  <Route path="/trips/:id/calendar" element={<CalendarTimelinePage />} />
+                  <Route path="/discover/destinations" element={<CityDiscoveryPage />} />
+                  <Route path="/discover/activities" element={<ActivityDiscoveryPage />} />
+                  <Route path="/globe/trip/:shareId" element={<PublicTripPage />} />
+                  <Route path="/profile" element={<ProfileSettingsPage />} />
+                  <Route path="/admin" element={<AdminDashboardPage />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          </BrowserRouter>
+        </TripProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

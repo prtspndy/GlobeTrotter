@@ -268,6 +268,38 @@ export const TripProvider = ({ children }) => {
     return aiGeneratedTrip;
   };
 
+  const removeStopFromTrip = (tripId, stopId) => {
+    setTrips(prev => prev.map(t => {
+      if (t.id === tripId) {
+        return {
+          ...t,
+          stops: t.stops ? t.stops.filter(s => s.id !== stopId) : []
+        };
+      }
+      return t;
+    }));
+  };
+
+  const removeActivityFromStop = (tripId, stopId, activityId) => {
+    setTrips(prev => prev.map(t => {
+      if (t.id === tripId) {
+        return {
+          ...t,
+          stops: t.stops ? t.stops.map(s => {
+            if (s.id === stopId) {
+              return {
+                ...s,
+                activities: s.activities ? s.activities.filter(a => a.id !== activityId) : []
+              };
+            }
+            return s;
+          }) : []
+        };
+      }
+      return t;
+    }));
+  };
+
   return (
     <TripContext.Provider value={{
       trips,
@@ -278,7 +310,9 @@ export const TripProvider = ({ children }) => {
       updateTrip,
       deleteTrip,
       addCityStop,
+      removeStopFromTrip,
       addActivityToDay,
+      removeActivityFromStop,
       deleteActivity,
       addExpense,
       deleteExpense,
