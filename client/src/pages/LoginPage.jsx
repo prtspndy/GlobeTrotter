@@ -30,13 +30,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-background text-on-surface antialiased">
+    <div className="w-full flex-grow flex flex-col lg:flex-row items-stretch bg-background text-on-surface antialiased min-h-[calc(100vh-80px)]">
       
       {/* Left Side: Editorial Image & Branding */}
-      <div className="hidden lg:flex w-[48%] relative flex-col justify-between overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center" 
-          style={{ backgroundImage: `url('https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=1200&q=80')` }}
+      <div className="hidden lg:flex lg:w-[48%] relative flex-col justify-between overflow-hidden self-stretch min-h-full">
+        <img
+          src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=1200&q=80"
+          alt="Travel Hero"
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-on-surface/90 via-on-surface/30 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-on-surface/60 via-transparent to-transparent" />
@@ -76,7 +77,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side: Authentication Canvas */}
-      <div className="w-full lg:w-[52%] flex flex-col justify-center items-center p-8 lg:p-16 bg-surface">
+      <div className="w-full lg:w-[52%] flex flex-col justify-center items-center p-8 lg:p-16 bg-surface self-stretch">
         <div className="w-full max-w-md flex flex-col gap-8">
           
           <div className="text-left flex flex-col gap-2">

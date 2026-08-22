@@ -30,11 +30,12 @@ export default function App() {
         <BrowserRouter>
           <div className="flex flex-col min-h-screen bg-background text-on-surface font-sans">
             <Navbar />
-            <main className="flex-grow">
+            <main className="flex-grow flex flex-col">
               <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<SignupPage />} />
+                <Route path="/signup" element={<SignupPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/verify-email" element={<VerifyEmailPage />} />
                 <Route path="/dashboard" element={<DashboardPage />} />
