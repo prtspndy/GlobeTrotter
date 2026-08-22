@@ -9,8 +9,30 @@
     font-family: 'Inter', sans-serif;
   }
 
-  h1, h2, h3, h4, .font-editorial {
+  h1, h2, h3, h4, .font-serif, .font-display-lg, .font-headline-sm, .font-headline-md {
     font-family: 'Playfair Display', serif;
+  }
+}
+
+.editorial-shadow { 
+  box-shadow: 2px 4px 12px rgba(27, 28, 28, 0.06); 
+}
+
+.route-dash { 
+  border-top: 1.5px dashed #a93100; 
+}
+
+.route-line-vertical { 
+  border-left: 1.5px dashed #a93100; 
+}
+
+.bg-hero-overlay { 
+  background: linear-gradient(90deg, rgba(251,249,248,1) 0%, rgba(251,249,248,0.85) 45%, rgba(251,249,248,0) 100%); 
+}
+
+@media (max-width: 768px) {
+  .bg-hero-overlay { 
+    background: linear-gradient(180deg, rgba(251,249,248,1) 0%, rgba(251,249,248,0.95) 50%, rgba(251,249,248,0) 100%); 
   }
 }
 

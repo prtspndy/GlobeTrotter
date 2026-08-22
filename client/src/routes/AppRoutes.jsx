@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import AdminRoute from './AdminRoute';
 
+import WelcomeScreenPage from '../pages/public/WelcomeScreenPage';
 import LandingPage from '../pages/public/LandingPage';
 import PublicTripPage from '../pages/public/PublicTripPage';
 
@@ -34,7 +35,9 @@ export default function AppRoutes() {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<WelcomeScreenPage />} />
+      <Route path="/welcome" element={<WelcomeScreenPage />} />
+      <Route path="/home" element={<LandingPage />} />
       <Route path="/globe/trip/:shareId" element={<PublicTripPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<SignupPage />} />
