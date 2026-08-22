@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
 import { MOCK_CITIES } from '../data/mockData';
+import { calculateRoute } from '../services/geoapifyService';
 import Toast from '../components/ui/Toast';
 
 export default function ItineraryBuilderPage() {
@@ -13,6 +14,7 @@ export default function ItineraryBuilderPage() {
   const [showAddActivityModal, setShowAddActivityModal] = useState(false);
   const [selectedStopId, setSelectedStopId] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
+  const [routeInfo, setRouteInfo] = useState(null);
 
   // New Stop form state
   const [selectedCityName, setSelectedCityName] = useState(MOCK_CITIES[0].name);
@@ -25,6 +27,38 @@ export default function ItineraryBuilderPage() {
   const [activityCategory, setActivityCategory] = useState('Sightseeing');
   const [activityCost, setActivityCost] = useState(25);
   const [activityDuration, setActivityDuration] = useState('2 hours');
+
+  // Calculate real-time route distance & travel time via Geoapify Routing API
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchRouting() {
+      if (!trip?.stops || trip.stops.length < 2) {
+        if (isMounted && routeInfo !== null) setRouteInfo(null);
+        return;
+      }
+
+      const waypoints = trip.stops
+        .map((stop) => {
+          const cityData = MOCK_CITIES.find((c) => c.name.toLowerCase() === stop.cityName.toLowerCase());
+          return {
+            lat: stop.lat || cityData?.lat || 41.9028,
+            lon: stop.lon || cityData?.lon || 12.4964
+          };
+        })
+        .filter((w) => w.lat && w.lon);
+
+      if (waypoints.length >= 2) {
+        const route = await calculateRoute(waypoints);
+        if (isMounted && route) {
+          setRouteInfo(route);
+        }
+      }
+    }
+
+    fetchRouting();
+    return () => { isMounted = false; };
+  }, [trip?.stops, routeInfo]);
 
   if (!trip) {
     return (
@@ -49,6 +83,8 @@ export default function ItineraryBuilderPage() {
       cityName: city.name,
       country: city.country,
       image: city.image,
+      lat: city.lat || 41.9028,
+      lon: city.lon || 12.4964,
       arrivalDate: stopArrival,
       departureDate: stopDeparture,
       activities: []
@@ -120,6 +156,12 @@ export default function ItineraryBuilderPage() {
               <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">calendar_today</span> {trip.startDate} — {trip.endDate}</span>
               <span>&bull;</span>
               <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">location_city</span> {trip.stops?.length || 0} Destination Stops</span>
+              {routeInfo && (
+                <>
+                  <span>&bull;</span>
+                  <span className="flex items-center gap-1 text-primary-fixed"><span className="material-symbols-outlined text-sm">directions_car</span> {routeInfo.distanceKm} km ({routeInfo.timeHours}h transit)</span>
+                </>
+              )}
             </div>
 
             <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-white drop-shadow-md">
@@ -136,7 +178,7 @@ export default function ItineraryBuilderPage() {
 
       <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-10 space-y-12">
         
-        {/* Smart Budget Advice Pill if over budget */}
+        {/* Smart Budget Advice Pill */}
         {isOverBudget && (
           <div className="p-4 bg-error-container/40 border border-error/50 rounded-sm text-xs text-on-error-container flex justify-between items-center">
             <span className="flex items-center gap-2">
@@ -152,9 +194,10 @@ export default function ItineraryBuilderPage() {
         {/* Journey Route Nodes */}
         <section className="bg-surface border border-outline-variant p-6 rounded-sm shadow-paper space-y-4">
           <div className="flex justify-between items-center border-b border-outline-variant pb-3">
-            <h2 className="font-label-caps text-xs text-primary uppercase tracking-widest font-semibold">
-              Journey Route & Multi-City Stops
-            </h2>
+            <div className="flex items-center gap-2 font-label-caps text-xs text-primary uppercase tracking-widest font-semibold">
+              <span>Journey Route & Multi-City Stops</span>
+              {routeInfo && <span className="px-2 py-0.5 bg-primary/10 border border-primary/30 rounded-sm font-mono text-[10px]">Geoapify Routing: {routeInfo.distanceKm} km</span>}
+            </div>
             <button
               onClick={() => setShowAddStopModal(true)}
               className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-primary hover:underline"
