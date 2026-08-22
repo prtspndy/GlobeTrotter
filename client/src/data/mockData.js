@@ -27,7 +27,7 @@ export const MOCK_CITIES = [
     country: "Japan",
     region: "Asia",
     description: "Futuristic metropolis blending neon skyscrapers with historic temples, shrines, and unmatched culinary crafts.",
-    image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80",
+    image: "/tokyo_city.jpg",
     costIndex: "moderate",
     popularity: 97,
     coordinates: { lat: 35.6762, lng: 139.6503 }
@@ -259,7 +259,7 @@ export const INITIAL_TRIPS = [
     id: "trip-2",
     title: "Tokyo & Kyoto Cultural Odyssey",
     description: "An immersive journey across Japan's neon modernism and historic shrine gardens.",
-    coverImage: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/tokyo_city.jpg",
     startDate: "2026-11-01",
     endDate: "2026-11-10",
     status: "planning",
