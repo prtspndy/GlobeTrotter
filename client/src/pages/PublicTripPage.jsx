@@ -1,7 +1,28 @@
 import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
 import { useAuth } from '../context/AuthContext';
+
+const CITY_PHOTO_MAP = {
+  rome: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80',
+  paris: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
+  tokyo: '/tokyo_city.jpg',
+  florence: 'https://images.unsplash.com/photo-1543429776-2782fc8e1acd?auto=format&fit=crop&w=800&q=80',
+  kyoto: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80',
+  amsterdam: 'https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?auto=format&fit=crop&w=800&q=80',
+  barcelona: 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=800&q=80'
+};
+
+function getStopImage(stop) {
+  if (stop?.image && typeof stop.image === 'string' && stop.image.trim() !== '') {
+    return stop.image;
+  }
+  const lower = (stop?.cityName || '').toLowerCase();
+  for (const key in CITY_PHOTO_MAP) {
+    if (lower.includes(key)) return CITY_PHOTO_MAP[key];
+  }
+  return 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80';
+}
 
 export default function PublicTripPage() {
   const { shareId } = useParams();
@@ -18,8 +39,8 @@ export default function PublicTripPage() {
     title: 'European Summer Escape',
     startDate: '2026-06-12',
     endDate: '2026-06-24',
-    description: 'A two-week journey through Italy and France, exploring ancient ruins, renaissance art, and culinary delights. This itinerary balances iconic landmarks with unhurried afternoons in neighborhood piazzas.',
-    coverImage: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=1200&q=80',
+    description: 'An editorial 7-day excursion through classical Italian monuments, Tuscan vineyards, and Renaissance masterpieces.',
+    coverImage: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1200&q=80',
     stops: [
       {
         id: 'stop-1',
@@ -40,19 +61,11 @@ export default function PublicTripPage() {
           { title: 'Uffizi Gallery Renaissance Tour', category: 'Culture' },
           { title: 'Sunset at Piazzale Michelangelo', category: 'Sightseeing' }
         ]
-      },
-      {
-        id: 'stop-3',
-        cityName: 'Paris',
-        country: 'France',
-        image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
-        activities: [
-          { title: 'Louvre Museum Guided Exhibition', category: 'Culture' },
-          { title: 'Seine River Sunset Cruise', category: 'Sightseeing' }
-        ]
       }
     ]
   };
+
+  const coverPhoto = trip.coverImage || 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1200&q=80';
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -71,10 +84,10 @@ export default function PublicTripPage() {
   return (
     <div className="w-full bg-surface pb-24">
       
-      {/* Hero Section */}
+      {/* Hero Section with Cover Image */}
       <section className="relative w-full h-[65vh] min-h-[450px] flex flex-col justify-end bg-on-surface overflow-hidden">
         <img
-          src={trip.coverImage}
+          src={coverPhoto}
           alt={trip.title}
           className="absolute inset-0 w-full h-full object-cover opacity-65"
         />
@@ -140,7 +153,11 @@ export default function PublicTripPage() {
               <React.Fragment key={stop.id || idx}>
                 <div className="flex flex-col items-center min-w-[100px] text-center space-y-1">
                   <div className="w-10 h-10 rounded-full border-2 border-primary overflow-hidden mx-auto">
-                    <img src={stop.image} alt={stop.cityName} className="w-full h-full object-cover" />
+                    <img
+                      src={getStopImage(stop)}
+                      alt={stop.cityName}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <span className="font-serif text-sm font-bold text-on-surface">{stop.cityName}</span>
                   <span className="text-[10px] text-secondary">{stop.country}</span>
@@ -164,8 +181,12 @@ export default function PublicTripPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {trip.stops?.map((stop, idx) => (
               <div key={stop.id || idx} className="bg-surface border border-outline-variant rounded-sm overflow-hidden shadow-paper flex flex-col justify-between">
-                <div className="h-56 relative">
-                  <img src={stop.image} alt={stop.cityName} className="w-full h-full object-cover" />
+                <div className="h-56 relative overflow-hidden">
+                  <img
+                    src={getStopImage(stop)}
+                    alt={stop.cityName}
+                    className="w-full h-full object-cover"
+                  />
                   <div className="absolute top-3 left-3 bg-surface/90 backdrop-blur px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-on-surface border border-outline-variant rounded-sm">
                     Stop {idx + 1}
                   </div>

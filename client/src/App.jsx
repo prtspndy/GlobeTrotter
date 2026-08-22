@@ -15,6 +15,7 @@ import DashboardPage from './pages/DashboardPage';
 import MyTripsPage from './pages/MyTripsPage';
 import CreateTripPage from './pages/CreateTripPage';
 import ItineraryBuilderPage from './pages/ItineraryBuilderPage';
+import ItineraryViewPage from './pages/itinerary/ItineraryViewPage';
 import BudgetDashboardPage from './pages/BudgetDashboardPage';
 import CalendarTimelinePage from './pages/CalendarTimelinePage';
 import CityDiscoveryPage from './pages/CityDiscoveryPage';
@@ -42,6 +43,7 @@ export default function App() {
                 <Route path="/trips" element={<MyTripsPage />} />
                 <Route path="/trips/create" element={<CreateTripPage />} />
                 <Route path="/trips/:id" element={<ItineraryBuilderPage />} />
+                <Route path="/trips/:id/view" element={<ItineraryViewPage />} />
                 <Route path="/trips/:id/budget" element={<BudgetDashboardPage />} />
                 <Route path="/trips/:id/calendar" element={<CalendarTimelinePage />} />
                 <Route path="/discover/destinations" element={<CityDiscoveryPage />} />

@@ -166,6 +166,7 @@ export const INITIAL_TRIPS = [
         cityId: "city-rome",
         cityName: "Rome",
         country: "Italy",
+        image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80",
         startDate: "2026-09-10",
         endDate: "2026-09-13",
         days: [
@@ -223,6 +224,7 @@ export const INITIAL_TRIPS = [
         cityId: "city-florence",
         cityName: "Florence",
         country: "Italy",
+        image: "https://images.unsplash.com/photo-1543429776-2782fc8e1acd?auto=format&fit=crop&w=800&q=80",
         startDate: "2026-09-14",
         endDate: "2026-09-17",
         days: [
@@ -272,6 +274,7 @@ export const INITIAL_TRIPS = [
         cityId: "city-tokyo",
         cityName: "Tokyo",
         country: "Japan",
+        image: "/tokyo_city.jpg",
         startDate: "2026-11-01",
         endDate: "2026-11-05",
         days: [
