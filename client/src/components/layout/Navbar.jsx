@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Sparkles, LogOut, PlusCircle, ShieldCheck, Menu, X } from 'lucide-react';
+import { Sparkles, LogOut, PlusCircle, ShieldCheck, Menu, X, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import AITripModal from '../modals/AITripModal';
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { isDarkMode, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -75,6 +77,16 @@ export default function Navbar() {
 
           {/* Action CTAs & Auth Controls */}
           <div className="hidden md:flex items-center space-x-4">
+            
+            {/* Dark / Light Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 text-on-surface/80 hover:text-primary transition rounded-full hover:bg-surface-container-low"
+              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {isDarkMode ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-600" />}
+            </button>
+
             {isAuthenticated ? (
               <>
                 <button
@@ -93,12 +105,13 @@ export default function Navbar() {
                   <span>Plan Trip</span>
                 </Link>
 
+                {/* Profile Picture Avatar Link */}
                 <div className="relative group pl-2 border-l border-outline-variant/60">
-                  <Link to="/profile" className="flex items-center space-x-2 focus:outline-none">
+                  <Link to="/profile" className="flex items-center space-x-2 focus:outline-none" title="Profile Settings">
                     <img 
-                      src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"} 
-                      alt={user?.name} 
-                      className="w-9 h-9 object-cover rounded-sm border border-outline/50 group-hover:border-primary transition"
+                      src={user?.avatar || "/default_avatar.jpg"} 
+                      alt={user?.name || "User Avatar"} 
+                      className="w-10 h-10 object-cover rounded-full border-2 border-primary/50 group-hover:border-primary transition shadow-sm bg-surface-container"
                     />
                   </Link>
                 </div>
@@ -129,7 +142,14 @@ export default function Navbar() {
             )}
           </div>
 
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              className="p-2 text-on-surface rounded-full"
+            >
+              {isDarkMode ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-600" />}
+            </button>
+
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 text-on-surface hover:text-primary focus:outline-none"
@@ -143,6 +163,18 @@ export default function Navbar() {
           <div className="md:hidden border-b border-outline-variant bg-surface px-4 pt-3 pb-6 space-y-3">
             {isAuthenticated ? (
               <>
+                <div className="flex items-center space-x-3 pb-3 border-b border-outline-variant">
+                  <img 
+                    src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"} 
+                    alt={user?.name || "User Avatar"} 
+                    className="w-10 h-10 object-cover rounded-full border-2 border-primary"
+                  />
+                  <div>
+                    <span className="font-serif font-bold text-on-surface block">{user?.name}</span>
+                    <span className="text-xs text-secondary block">{user?.email}</span>
+                  </div>
+                </div>
+
                 <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="block text-sm font-medium text-on-surface hover:text-primary">Dashboard</Link>
                 <Link to="/trips" onClick={() => setIsMobileMenuOpen(false)} className="block text-sm font-medium text-on-surface hover:text-primary">My Trips</Link>
                 <Link to="/discover/destinations" onClick={() => setIsMobileMenuOpen(false)} className="block text-sm font-medium text-on-surface hover:text-primary">Destinations</Link>

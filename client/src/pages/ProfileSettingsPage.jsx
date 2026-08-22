@@ -1,24 +1,23 @@
 import React, { useState } from 'react';
-import { Camera, Sun, Moon, Check, Save, User, Mail, Phone, MapPin, Globe, Shield, Sparkles } from 'lucide-react';
+import { Camera, Sun, Moon, Check, Save, User, Mail, Phone, MapPin, Globe, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTrip } from '../context/TripContext';
 import { useTheme } from '../context/ThemeContext';
-import { MOCK_CITIES } from '../data/mockData';
 
 export default function ProfileSettingsPage() {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
   const { trips } = useTrip();
   const { isDarkMode, toggleTheme } = useTheme();
 
   // Profile Form States
-  const [avatar, setAvatar] = useState(user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80");
+  const [avatar, setAvatar] = useState(user?.avatar || "/default_avatar.jpg");
   const [name, setName] = useState(user?.name || 'Prashant Sharma');
   const [email, setEmail] = useState(user?.email || 'prashant.sharma@globetrotter.com');
-  const [phone, setPhone] = useState('+91 98765 43210');
-  const [homeCity, setHomeCity] = useState('Mumbai, India');
-  const [currency, setCurrency] = useState('INR');
-  const [travelStyle, setTravelStyle] = useState(['Heritage', 'Food & Dining', 'Culture']);
-  const [emergencyContact, setEmergencyContact] = useState('+91 98123 45678');
+  const [phone, setPhone] = useState(user?.phone || '+91 98765 43210');
+  const [homeCity, setHomeCity] = useState(user?.homeCity || 'Mumbai, India');
+  const [currency, setCurrency] = useState(user?.currency || 'INR');
+  const [travelStyle, setTravelStyle] = useState(user?.travelStyle || ['Heritage', 'Food & Dining', 'Culture']);
+  const [emergencyContact, setEmergencyContact] = useState(user?.emergencyContact || '+91 98123 45678');
   
   const [photoUrlInput, setPhotoUrlInput] = useState('');
   const [showPhotoModal, setShowPhotoModal] = useState(false);
@@ -30,19 +29,26 @@ export default function ProfileSettingsPage() {
   }, 0);
 
   const PRESET_AVATARS = [
+    "/default_avatar.jpg",
     "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
     "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
-    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80",
-    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80"
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80"
   ];
+
+  const applyAvatar = (newAvatarUrl) => {
+    setAvatar(newAvatarUrl);
+    if (updateProfile) {
+      updateProfile({ avatar: newAvatarUrl });
+    }
+    setShowPhotoModal(false);
+  };
 
   const handlePhotoUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setAvatar(reader.result);
-        setShowPhotoModal(false);
+        applyAvatar(reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -51,9 +57,8 @@ export default function ProfileSettingsPage() {
   const handlePhotoUrlSubmit = (e) => {
     e.preventDefault();
     if (photoUrlInput.trim()) {
-      setAvatar(photoUrlInput.trim());
+      applyAvatar(photoUrlInput.trim());
       setPhotoUrlInput('');
-      setShowPhotoModal(false);
     }
   };
 
@@ -67,6 +72,18 @@ export default function ProfileSettingsPage() {
 
   const handleSave = (e) => {
     e.preventDefault();
+    if (updateProfile) {
+      updateProfile({
+        name,
+        email,
+        avatar,
+        phone,
+        homeCity,
+        currency,
+        travelStyle,
+        emergencyContact
+      });
+    }
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
   };
@@ -88,7 +105,7 @@ export default function ProfileSettingsPage() {
           {/* Dark / Light Mode Toggle Button */}
           <button
             onClick={toggleTheme}
-            className="flex items-center gap-2 px-4 py-2 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-semibold text-on-surface hover:border-primary transition shadow-paper cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-semibold text-on-surface hover:border-primary transition shadow-paper cursor-pointer"
           >
             {isDarkMode ? (
               <>
@@ -120,6 +137,7 @@ export default function ProfileSettingsPage() {
 
               {/* Camera Change Button */}
               <button
+                type="button"
                 onClick={() => setShowPhotoModal(true)}
                 className="absolute bottom-0 right-0 w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center shadow-lg hover:bg-primary-container transition border-2 border-surface cursor-pointer"
                 title="Change profile photo"
@@ -171,7 +189,7 @@ export default function ProfileSettingsPage() {
 
             {savedSuccess && (
               <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-lg border border-emerald-200">
-                <Check className="w-4 h-4" /> Changes saved successfully!
+                <Check className="w-4 h-4" /> Profile updated successfully!
               </span>
             )}
           </div>
@@ -351,20 +369,37 @@ export default function ProfileSettingsPage() {
                 />
               </div>
 
-              {/* Or Preset Avatars */}
-              <div className="space-y-2">
+              {/* Image URL Input */}
+              <form onSubmit={handlePhotoUrlSubmit} className="space-y-2">
                 <label className="block text-xs font-semibold text-secondary uppercase tracking-wider">
-                  Or Select Preset Avatar
+                  Or Enter Photo Web Link / URL
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={photoUrlInput}
+                    onChange={(e) => setPhotoUrlInput(e.target.value)}
+                    placeholder="https://images.unsplash.com/..."
+                    className="flex-1 h-[42px] bg-surface-container-low border border-outline-variant rounded-xl px-3 text-xs text-on-surface outline-none"
+                  />
+                  <button type="submit" className="px-4 bg-primary text-white text-xs font-semibold rounded-xl">
+                    Apply
+                  </button>
+                </div>
+              </form>
+
+              {/* Or Preset Avatars */}
+              <div className="space-y-2 pt-2 border-t border-outline-variant">
+                <label className="block text-xs font-semibold text-secondary uppercase tracking-wider">
+                  Select Preset Avatar
                 </label>
                 <div className="flex gap-3">
                   {PRESET_AVATARS.map((url, idx) => (
                     <button
+                      type="button"
                       key={idx}
-                      onClick={() => {
-                        setAvatar(url);
-                        setShowPhotoModal(false);
-                      }}
-                      className="w-14 h-14 rounded-full overflow-hidden border-2 border-outline-variant hover:border-primary transition"
+                      onClick={() => applyAvatar(url)}
+                      className="w-14 h-14 rounded-full overflow-hidden border-2 border-outline-variant hover:border-primary transition cursor-pointer"
                     >
                       <img src={url} alt="preset" className="w-full h-full object-cover" />
                     </button>

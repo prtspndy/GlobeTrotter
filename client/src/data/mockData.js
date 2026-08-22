@@ -712,7 +712,7 @@ export const MOCK_USER = {
   id: "user-1",
   name: "Alexandra Vance",
   email: "alexandra.vance@globetrotter.com",
-  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+  avatar: "/default_avatar.jpg",
   role: "user",
   preferences: {
     travelStyle: ["Cultural", "Gastronomy", "Heritage Trails"],
