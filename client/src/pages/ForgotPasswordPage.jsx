@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Mail, Send, CheckCircle } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -16,11 +17,11 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6">
-      <div className="w-full max-w-md bg-surface border border-outline-variant p-8 sm:p-10 shadow-paper space-y-6">
+    <div className="w-full min-h-[calc(100vh-80px)] flex items-center justify-center bg-background p-6">
+      <div className="w-full max-w-md bg-surface border border-outline-variant p-8 sm:p-10 rounded-2xl shadow-paper space-y-6">
         <div className="text-center space-y-2">
-          <Link to="/" className="inline-flex items-center space-x-2 mb-4">
-            <div className="w-8 h-8 bg-primary text-white flex items-center justify-center font-serif text-lg font-bold rounded-sm">
+          <Link to="/" className="inline-flex items-center space-x-2 mb-2">
+            <div className="w-9 h-9 bg-primary text-white flex items-center justify-center font-serif text-lg font-bold rounded-sm shadow-sm">
               GT
             </div>
             <span className="font-serif text-xl font-bold uppercase tracking-tight text-on-surface">
@@ -37,8 +38,8 @@ export default function ForgotPasswordPage() {
         </div>
 
         {submitted ? (
-          <div className="bg-surface-container-low border border-primary/40 p-4 text-center space-y-3">
-            <span className="material-symbols-outlined text-primary text-3xl">mark_email_read</span>
+          <div className="bg-surface-container-low border border-primary/40 p-6 text-center space-y-3 rounded-xl">
+            <CheckCircle className="w-8 h-8 text-primary mx-auto" />
             <h3 className="font-serif text-base font-bold text-on-surface">Recovery Email Sent</h3>
             <p className="text-xs text-secondary leading-relaxed">
               We've dispatched reset instructions to <strong className="text-on-surface">{email}</strong>. Please check your inbox.
@@ -48,22 +49,20 @@ export default function ForgotPasswordPage() {
             </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="relative w-full group">
-              <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2 group">
+              <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
                 Email address
               </label>
-              <div className="relative flex items-end">
-                <span className="material-symbols-outlined text-secondary absolute left-0 bottom-2 text-xl">
-                  mail
-                </span>
+              <div className="relative flex items-center">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary group-focus-within:text-primary transition-colors pointer-events-none" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
                   required
-                  className="w-full bg-transparent border-0 border-b border-outline focus:ring-0 focus:border-primary pb-2 pl-8 pr-0 text-on-surface text-sm transition-colors placeholder-secondary/60"
+                  className="w-full h-[52px] bg-surface-container-low border border-outline-variant rounded-xl pl-12 pr-4 text-on-surface text-sm font-medium placeholder-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 hover:border-outline transition-all duration-200"
                 />
               </div>
             </div>
@@ -71,10 +70,19 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary text-white font-semibold text-xs uppercase tracking-wider py-3.5 px-6 rounded-sm shadow-paper hover:bg-primary-container transition flex items-center justify-center space-x-2 disabled:opacity-50"
+              className="w-full h-[52px] bg-primary text-white font-semibold text-xs uppercase tracking-wider rounded-xl shadow-paper hover:bg-primary-container focus:outline-none focus:ring-2 focus:ring-primary/30 transition flex items-center justify-center space-x-2 disabled:opacity-60 cursor-pointer"
             >
-              <span>{loading ? 'Sending Instructions...' : 'Send Recovery Link'}</span>
-              <span className="material-symbols-outlined text-lg">send</span>
+              {loading ? (
+                <>
+                  <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+                  <span>Sending Instructions...</span>
+                </>
+              ) : (
+                <>
+                  <span>Send Recovery Link</span>
+                  <Send className="w-4 h-4" />
+                </>
+              )}
             </button>
 
             <div className="text-center text-xs text-secondary pt-2">
