@@ -1,0 +1,186 @@
+// Prisma Schema for GlobeTrotter - Multi-City Travel Planning Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TripVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum ActivityCategory {
+  SIGHTSEEING
+  CULTURE
+  FOOD
+  ADVENTURE
+  NATURE
+  SHOPPING
+  SPIRITUAL
+  NIGHTLIFE
+  OTHER
+}
+
+enum ExpenseCategory {
+  TRANSPORTATION
+  ACCOMMODATION
+  ACTIVITIES
+  MEALS
+  OTHER
+}
+
+model User {
+  id               String      @id @default(cuid())
+  name             String
+  email            String      @unique
+  password         String?
+  avatar           String?
+  role             Role        @default(USER)
+  homeCity         String?
+  currency         String      @default("INR")
+  language         String      @default("English")
+  travelStyle      String[]
+  emergencyContact String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  trips            Trip[]
+  sessions         Session[]
+  accounts         Account[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Trip {
+  id          String         @id @default(cuid())
+  userId      String
+  title       String
+  description String?        @db.Text
+  coverImage  String?
+  startDate   DateTime
+  endDate     DateTime
+  totalBudget Float          @default(0)
+  visibility  TripVisibility @default(PRIVATE)
+  shareId     String         @unique @default(cuid())
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stops     Stop[]
+  expenses  Expense[]
+  shareLink ShareLink?
+
+  @@index([userId])
+  @@index([shareId])
+}
+
+model Stop {
+  id          String   @id @default(cuid())
+  tripId      String
+  cityId      String?
+  cityName    String
+  country     String
+  image       String?
+  startDate   DateTime
+  endDate     DateTime
+  order       Int      @default(0)
+  latitude    Float?
+  longitude   Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  trip       Trip       @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  activities Activity[]
+
+  @@index([tripId])
+}
+
+model Activity {
+  id              String           @id @default(cuid())
+  stopId          String
+  title           String
+  description     String?          @db.Text
+  category        ActivityCategory @default(SIGHTSEEING)
+  startTime       String?          // e.g. "09:30"
+  durationMinutes Int              @default(60)
+  cost            Float            @default(0)
+  locationName    String?
+  completed       Boolean          @default(false)
+  image           String?
+  order           Int              @default(0)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  stop Stop @relation(fields: [stopId], references: [id], onDelete: Cascade)
+
+  @@index([stopId])
+}
+
+model Expense {
+  id          String          @id @default(cuid())
+  tripId      String
+  title       String
+  category    ExpenseCategory @default(OTHER)
+  amount      Float
+  date        DateTime        @default(now())
+  notes       String?
+  createdAt   DateTime        @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+}
+
+model ShareLink {
+  id        String   @id @default(cuid())
+  tripId    String   @unique
+  shareId   String   @unique
+  isPublic  Boolean  @default(true)
+  views     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+}

@@ -109,9 +109,9 @@ export default function Navbar() {
                 <div className="relative group pl-2 border-l border-outline-variant/60">
                   <Link to="/profile" className="flex items-center space-x-2 focus:outline-none" title="Profile Settings">
                     <img 
-                      src={user?.avatar || "/default_avatar.jpg"} 
+                      src={user?.avatar || "/default_avatar.png"} 
                       alt={user?.name || "User Avatar"} 
-                      className="w-10 h-10 object-cover rounded-full border-2 border-primary/50 group-hover:border-primary transition shadow-sm bg-surface-container"
+                      className="w-10 h-10 object-cover rounded-full border-2 border-primary/50 group-hover:border-primary transition shadow-sm"
                     />
                   </Link>
                 </div>
@@ -165,7 +165,7 @@ export default function Navbar() {
               <>
                 <div className="flex items-center space-x-3 pb-3 border-b border-outline-variant">
                   <img 
-                    src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"} 
+                    src={user?.avatar || "/default_avatar.png"} 
                     alt={user?.name || "User Avatar"} 
                     className="w-10 h-10 object-cover rounded-full border-2 border-primary"
                   />

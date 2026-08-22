@@ -710,9 +710,9 @@ export const INITIAL_TRIPS = [
 
 export const MOCK_USER = {
   id: "user-1",
-  name: "Alexandra Vance",
-  email: "alexandra.vance@globetrotter.com",
-  avatar: "/default_avatar.jpg",
+  name: "Prashant Sharma",
+  email: "prashant.sharma@globetrotter.com",
+  avatar: "/default_avatar.png",
   role: "user",
   preferences: {
     travelStyle: ["Cultural", "Gastronomy", "Heritage Trails"],

@@ -1,26 +1,30 @@
 import React, { useState } from 'react';
-import { Camera, Sun, Moon, Check, Save, User, Mail, Phone, MapPin, Globe, Shield } from 'lucide-react';
+import { Camera, Sun, Moon, Check, Save, User, Mail, Phone, MapPin, Globe, Shield, Trash2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTrip } from '../context/TripContext';
 import { useTheme } from '../context/ThemeContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function ProfileSettingsPage() {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
   const { trips } = useTrip();
   const { isDarkMode, toggleTheme } = useTheme();
+  const navigate = useNavigate();
 
   // Profile Form States
-  const [avatar, setAvatar] = useState(user?.avatar || "/default_avatar.jpg");
+  const [avatar, setAvatar] = useState(user?.avatar || "/default_avatar.png");
   const [name, setName] = useState(user?.name || 'Prashant Sharma');
   const [email, setEmail] = useState(user?.email || 'prashant.sharma@globetrotter.com');
   const [phone, setPhone] = useState(user?.phone || '+91 98765 43210');
   const [homeCity, setHomeCity] = useState(user?.homeCity || 'Mumbai, India');
   const [currency, setCurrency] = useState(user?.currency || 'INR');
+  const [language, setLanguage] = useState(user?.language || 'English');
   const [travelStyle, setTravelStyle] = useState(user?.travelStyle || ['Heritage', 'Food & Dining', 'Culture']);
   const [emergencyContact, setEmergencyContact] = useState(user?.emergencyContact || '+91 98123 45678');
   
   const [photoUrlInput, setPhotoUrlInput] = useState('');
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   const totalStops = trips.reduce((acc, t) => acc + (t.stops?.length || 0), 0);
@@ -29,7 +33,7 @@ export default function ProfileSettingsPage() {
   }, 0);
 
   const PRESET_AVATARS = [
-    "/default_avatar.jpg",
+    "/default_avatar.png",
     "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
     "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
     "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80"
@@ -80,12 +84,18 @@ export default function ProfileSettingsPage() {
         phone,
         homeCity,
         currency,
+        language,
         travelStyle,
         emergencyContact
       });
     }
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
+  };
+
+  const handleDeleteAccount = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -285,23 +295,44 @@ export default function ProfileSettingsPage() {
                 </div>
               </div>
 
-              {/* Emergency Contact */}
+              {/* Language Preference */}
               <div className="space-y-2">
                 <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Emergency Contact
+                  Language Preference <span className="text-error">*</span>
                 </label>
                 <div className="relative flex items-center">
-                  <Shield className="absolute left-4 w-4 h-4 text-secondary" />
-                  <input
-                    type="tel"
-                    value={emergencyContact}
-                    onChange={(e) => setEmergencyContact(e.target.value)}
-                    placeholder="+91 Emergency Contact"
+                  <Globe className="absolute left-4 w-4 h-4 text-secondary" />
+                  <select
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
                     className="w-full h-[50px] bg-surface-container-low border border-outline-variant rounded-xl pl-11 pr-4 text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none"
-                  />
+                  >
+                    <option value="English">English (US/UK)</option>
+                    <option value="Hindi">Hindi (हिंदी)</option>
+                    <option value="Spanish">Spanish (Español)</option>
+                    <option value="French">French (Français)</option>
+                    <option value="German">German (Deutsch)</option>
+                  </select>
                 </div>
               </div>
 
+            </div>
+
+            {/* Emergency Contact */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+                Emergency Contact Number
+              </label>
+              <div className="relative flex items-center max-w-md">
+                <Shield className="absolute left-4 w-4 h-4 text-secondary" />
+                <input
+                  type="tel"
+                  value={emergencyContact}
+                  onChange={(e) => setEmergencyContact(e.target.value)}
+                  placeholder="+91 Emergency Contact"
+                  className="w-full h-[50px] bg-surface-container-low border border-outline-variant rounded-xl pl-11 pr-4 text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none"
+                />
+              </div>
             </div>
 
             {/* Travel Interests Tags */}
@@ -331,13 +362,22 @@ export default function ProfileSettingsPage() {
             </div>
 
             {/* Submit Button */}
-            <div className="pt-4">
+            <div className="pt-4 flex items-center justify-between">
               <button
                 type="submit"
                 className="h-[50px] px-8 bg-primary text-white font-semibold text-xs uppercase tracking-wider rounded-xl shadow-paper hover:bg-primary-container transition flex items-center gap-2 cursor-pointer"
               >
                 <Save className="w-4 h-4" />
                 <span>Save Profile Changes</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="h-[50px] px-6 border border-error/40 text-error hover:bg-error-container/40 text-xs font-semibold uppercase tracking-wider rounded-xl transition flex items-center gap-2 cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Delete Account</span>
               </button>
             </div>
 
@@ -407,6 +447,39 @@ export default function ProfileSettingsPage() {
                 </div>
               </div>
 
+            </div>
+          </div>
+        )}
+
+        {/* Delete Account Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-surface border border-outline-variant rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-6">
+              <div className="flex items-center gap-3 text-error">
+                <AlertTriangle className="w-7 h-7" />
+                <h3 className="font-serif text-xl font-bold text-on-surface">Delete Account?</h3>
+              </div>
+
+              <p className="text-xs text-secondary leading-relaxed">
+                Are you sure you want to permanently delete your GlobeTrotter traveler account? All saved trips, custom itineraries, and budget records will be removed.
+              </p>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant">
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(false)}
+                  className="px-5 py-2.5 bg-surface-container-low border border-outline-variant text-xs font-semibold rounded-xl text-on-surface hover:bg-surface-container transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteAccount}
+                  className="px-5 py-2.5 bg-error text-white text-xs font-semibold rounded-xl hover:bg-red-700 transition"
+                >
+                  Permanently Delete
+                </button>
+              </div>
             </div>
           </div>
         )}
