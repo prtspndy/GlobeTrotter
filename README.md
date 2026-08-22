@@ -7,6 +7,13 @@ GlobeTrotter is a personalized travel planning platform designed to make plannin
 It allows travelers to create customized itineraries, manage destinations and activities, estimate trip expenses, visualize their journey, and share their travel plans with others.
 
 ---
+🔗 Project Links :
+
+🌐 Live Project: https://globetrotter1-kappa.vercel.app/
+💻 GitHub Repository: https://github.com/prtspndy/GlobeTrotter
+📄 Project Documentation: https://drive.google.com/file/d/1YQrrHda01JDDPAFVZqlq8hNoSbCO4XQH/view?usp=sharing
+🎞️ Project Presentation: https://drive.google.com/file/d/1fIUUQwjfTTtcmx2DnytH89_6pMEUyPOk/view?usp=sharing
+🎥 Demo Video: Link
 
 ## 🚀 Overview
 
