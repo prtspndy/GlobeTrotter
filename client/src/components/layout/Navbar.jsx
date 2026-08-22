@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Sparkles, LogOut, PlusCircle, ShieldCheck, Menu, X, Sun, Moon } from 'lucide-react';
+import { Sparkles, LogOut, PlusCircle, ShieldCheck, Menu, X, Sun, Moon, Calendar } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import AITripModal from '../modals/AITripModal';
@@ -62,6 +62,12 @@ export default function Navbar() {
               >
                 Activities
               </Link>
+              <Link 
+                to="/trips/trip-india-1/calendar" 
+                className={`transition hover:text-primary ${location.pathname.includes('/calendar') ? 'text-primary font-semibold border-b-2 border-primary pb-1' : 'text-on-surface/80'}`}
+              >
+                Calendar
+              </Link>
 
               {user?.role === 'admin' && (
                 <Link 
@@ -81,7 +87,7 @@ export default function Navbar() {
             {/* Dark / Light Theme Toggle Button */}
             <button
               onClick={toggleTheme}
-              className="p-2 text-on-surface/80 hover:text-primary transition rounded-full hover:bg-surface-container-low"
+              className="p-2 text-on-surface/80 hover:text-primary transition rounded-full hover:bg-surface-container-low cursor-pointer"
               title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {isDarkMode ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-600" />}
@@ -91,7 +97,7 @@ export default function Navbar() {
               <>
                 <button
                   onClick={() => setIsAiModalOpen(true)}
-                  className="flex items-center space-x-2 px-3.5 py-2 text-xs font-semibold uppercase tracking-wider bg-surface-container border border-primary/40 text-primary rounded-sm hover:bg-primary hover:text-white transition shadow-sm"
+                  className="flex items-center space-x-2 px-3.5 py-2 text-xs font-semibold uppercase tracking-wider bg-surface-container border border-primary/40 text-primary rounded-sm hover:bg-primary hover:text-white transition shadow-sm cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4 text-primary animate-pulse" />
                   <span>AI Architect</span>
@@ -118,7 +124,7 @@ export default function Navbar() {
 
                 <button
                   onClick={() => { logout(); navigate('/login'); }}
-                  className="p-2 text-on-surface/60 hover:text-error transition"
+                  className="p-2 text-on-surface/60 hover:text-error transition cursor-pointer"
                   title="Logout"
                 >
                   <LogOut className="w-5 h-5" />
@@ -179,6 +185,7 @@ export default function Navbar() {
                 <Link to="/trips" onClick={() => setIsMobileMenuOpen(false)} className="block text-sm font-medium text-on-surface hover:text-primary">My Trips</Link>
                 <Link to="/discover/destinations" onClick={() => setIsMobileMenuOpen(false)} className="block text-sm font-medium text-on-surface hover:text-primary">Destinations</Link>
                 <Link to="/discover/activities" onClick={() => setIsMobileMenuOpen(false)} className="block text-sm font-medium text-on-surface hover:text-primary">Activities</Link>
+                <Link to="/trips/trip-india-1/calendar" onClick={() => setIsMobileMenuOpen(false)} className="block text-sm font-medium text-on-surface hover:text-primary">Calendar</Link>
                 <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="block text-sm font-medium text-on-surface hover:text-primary">Profile & Settings</Link>
                 
                 <div className="pt-3 border-t border-outline-variant/60 flex flex-col space-y-2">
