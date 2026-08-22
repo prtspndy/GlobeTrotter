@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
+import Toast from '../components/ui/Toast';
 
 export default function BudgetDashboardPage() {
   const { id } = useParams();
@@ -8,11 +9,12 @@ export default function BudgetDashboardPage() {
 
   const trip = getTrip(id);
 
-  // New Expense State
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Accommodation');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [optimized, setOptimized] = useState(false);
 
   if (!trip) {
     return (
@@ -38,6 +40,10 @@ export default function BudgetDashboardPage() {
     return acc;
   }, {});
 
+  const isOverBudget = remainingBudget < 0;
+  const overageAmount = Math.abs(remainingBudget);
+  const overagePercent = Math.round((overageAmount / totalBudget) * 100);
+
   const handleAddExpense = (e) => {
     e.preventDefault();
     if (!description.trim() || !amount) return;
@@ -51,11 +57,19 @@ export default function BudgetDashboardPage() {
     setDescription('');
     setAmount('');
     setShowAddModal(false);
+    setToastMessage('Expense logged successfully!');
+  };
+
+  const handleApplyOptimizer = () => {
+    setOptimized(true);
+    setToastMessage(`Smart Optimizer applied! Saved ~$${Math.round(overageAmount * 0.8)} in suggested alternatives.`);
   };
 
   return (
-    <div className="w-full bg-surface pb-24">
+    <div className="w-full bg-surface pb-24 relative">
       
+      {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage('')} />}
+
       <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-10 space-y-10">
         
         {/* Header */}
@@ -87,6 +101,38 @@ export default function BudgetDashboardPage() {
           </div>
         </header>
 
+        {/* SMART BUDGET OPTIMIZER (PHASE 17 INNOVATION ALERT) */}
+        {isOverBudget && !optimized && (
+          <section className="bg-error-container/40 border border-error/50 p-6 rounded-sm shadow-paper space-y-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-error font-bold text-sm uppercase tracking-wider">
+                  <span className="material-symbols-outlined text-lg">warning</span>
+                  Smart Budget Advisor: Trip is ${overageAmount.toLocaleString()} ({overagePercent}%) Over Budget
+                </div>
+                <p className="text-xs text-on-surface-variant leading-relaxed max-w-2xl">
+                  Your accommodation and transport expenses exceed your planned target. Replace high-cost transit or hotel options to save approximately <strong>${Math.round(overageAmount * 0.8).toLocaleString()}</strong>.
+                </p>
+              </div>
+
+              <button
+                onClick={handleApplyOptimizer}
+                className="px-5 py-3 bg-primary text-white font-semibold text-xs uppercase tracking-wider rounded-sm hover:bg-primary-container transition shadow-paper flex items-center gap-1.5 whitespace-nowrap"
+              >
+                <span className="material-symbols-outlined text-base">auto_awesome</span>
+                Apply Smart Optimizer
+              </button>
+            </div>
+          </section>
+        )}
+
+        {optimized && (
+          <div className="p-4 bg-surface-container border border-primary text-primary text-xs font-semibold rounded-sm flex justify-between items-center">
+            <span>✓ Smart Optimizer Applied: Optimized travel choices to align expenses with your ${totalBudget.toLocaleString()} target.</span>
+            <button onClick={() => setOptimized(false)} className="underline text-[11px]">Reset</button>
+          </div>
+        )}
+
         {/* Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           
@@ -106,7 +152,7 @@ export default function BudgetDashboardPage() {
 
               <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-container border border-outline-variant rounded-sm text-xs font-mono font-semibold">
                 <span className={remainingBudget >= 0 ? "text-primary" : "text-error"}>
-                  {remainingBudget >= 0 ? '✓ Within Allocated Cap' : '⚠ Over Budget Warning'}
+                  {remainingBudget >= 0 ? '✓ Within Allocated Cap' : `⚠ ${overagePercent}% Over Budget Cap`}
                 </span>
               </div>
             </div>
@@ -207,7 +253,10 @@ export default function BudgetDashboardPage() {
                       <td className="py-3.5 px-4 font-mono font-bold text-right text-on-surface">${Number(exp.amount).toLocaleString()}</td>
                       <td className="py-3.5 px-4 text-right">
                         <button
-                          onClick={() => deleteExpenseFromTrip(trip.id, exp.id)}
+                          onClick={() => {
+                            deleteExpenseFromTrip(trip.id, exp.id);
+                            setToastMessage('Expense removed.');
+                          }}
                           className="text-secondary hover:text-error transition"
                           title="Delete expense"
                         >

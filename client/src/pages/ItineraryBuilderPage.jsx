@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
 import { MOCK_CITIES } from '../data/mockData';
+import Toast from '../components/ui/Toast';
 
 export default function ItineraryBuilderPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const { getTrip, addStopToTrip, addActivityToStop, removeActivityFromStop } = useTrip();
+  const { getTrip, addStopToTrip, removeStopFromTrip, addActivityToStop, removeActivityFromStop } = useTrip();
 
   const trip = getTrip(id);
-  const [activeTab, setActiveTab] = useState('itinerary');
   const [showAddStopModal, setShowAddStopModal] = useState(false);
   const [showAddActivityModal, setShowAddActivityModal] = useState(false);
   const [selectedStopId, setSelectedStopId] = useState(null);
+  const [toastMessage, setToastMessage] = useState('');
 
   // New Stop form state
   const [selectedCityName, setSelectedCityName] = useState(MOCK_CITIES[0].name);
@@ -39,6 +39,9 @@ export default function ItineraryBuilderPage() {
     );
   }
 
+  const expensesTotal = trip.expenses?.reduce((acc, e) => acc + Number(e.amount), 0) || 0;
+  const isOverBudget = expensesTotal > (trip.totalBudget || 3500);
+
   const handleAddStop = (e) => {
     e.preventDefault();
     const city = MOCK_CITIES.find((c) => c.name === selectedCityName) || MOCK_CITIES[0];
@@ -51,6 +54,7 @@ export default function ItineraryBuilderPage() {
       activities: []
     });
     setShowAddStopModal(false);
+    setToastMessage(`Added ${city.name} to itinerary route!`);
   };
 
   const handleAddActivity = (e) => {
@@ -68,11 +72,14 @@ export default function ItineraryBuilderPage() {
 
     setActivityTitle('');
     setShowAddActivityModal(false);
+    setToastMessage(`Scheduled "${activityTitle}"!`);
   };
 
   return (
-    <div className="w-full bg-surface pb-24">
+    <div className="w-full bg-surface pb-24 relative">
       
+      {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage('')} />}
+
       {/* HEADER HERO COVER */}
       <header className="relative w-full h-[50vh] min-h-[360px] bg-on-surface overflow-hidden">
         <img
@@ -129,6 +136,19 @@ export default function ItineraryBuilderPage() {
 
       <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-10 space-y-12">
         
+        {/* Smart Budget Advice Pill if over budget */}
+        {isOverBudget && (
+          <div className="p-4 bg-error-container/40 border border-error/50 rounded-sm text-xs text-on-error-container flex justify-between items-center">
+            <span className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-error text-base">warning</span>
+              <strong>Smart Budget Alert:</strong> Total expenses (${expensesTotal.toLocaleString()}) exceed budget target (${trip.totalBudget.toLocaleString()}).
+            </span>
+            <Link to={`/trips/${trip.id}/budget`} className="text-primary font-bold hover:underline uppercase tracking-wider text-[11px]">
+              Optimize Budget &rarr;
+            </Link>
+          </div>
+        )}
+
         {/* Journey Route Nodes */}
         <section className="bg-surface border border-outline-variant p-6 rounded-sm shadow-paper space-y-4">
           <div className="flex justify-between items-center border-b border-outline-variant pb-3">
@@ -147,7 +167,18 @@ export default function ItineraryBuilderPage() {
           <div className="flex items-center gap-2 overflow-x-auto py-3">
             {trip.stops?.map((stop, idx) => (
               <React.Fragment key={stop.id || idx}>
-                <div className="flex flex-col items-center min-w-[120px] p-3 border border-outline-variant rounded-sm bg-surface-container-low text-center space-y-1">
+                <div className="flex flex-col items-center min-w-[120px] p-3 border border-outline-variant rounded-sm bg-surface-container-low text-center space-y-1 relative group">
+                  <button
+                    onClick={() => {
+                      removeStopFromTrip(trip.id, stop.id);
+                      setToastMessage(`Removed ${stop.cityName} from route.`);
+                    }}
+                    className="absolute top-1 right-1 text-secondary hover:text-error opacity-0 group-hover:opacity-100 transition p-0.5"
+                    title="Remove Stop"
+                  >
+                    <span className="material-symbols-outlined text-xs">close</span>
+                  </button>
+
                   <div className="w-10 h-10 rounded-full border-2 border-primary overflow-hidden mx-auto mb-1">
                     <img src={stop.image} alt={stop.cityName} className="w-full h-full object-cover" />
                   </div>
@@ -233,7 +264,10 @@ export default function ItineraryBuilderPage() {
                       </div>
 
                       <button
-                        onClick={() => removeActivityFromStop(trip.id, stop.id, act.id)}
+                        onClick={() => {
+                          removeActivityFromStop(trip.id, stop.id, act.id);
+                          setToastMessage('Activity removed.');
+                        }}
                         className="text-secondary hover:text-error transition opacity-0 group-hover:opacity-100 p-1"
                         title="Remove activity"
                       >
