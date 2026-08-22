@@ -1,0 +1,9 @@
+:root {
+  --color-primary: #a93100;
+  --color-background: #fbf9f8;
+  --color-surface: #fbf9f8;
+  --color-on-surface: #1b1c1c;
+  --color-outline: #916f65;
+  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Inter', sans-serif;
+}

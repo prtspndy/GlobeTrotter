@@ -1,0 +1,6 @@
+/* Responsive layout helpers for GlobeTrotter */
+@media (max-width: 640px) {
+  .editorial-grid {
+    grid-template-columns: 1fr;
+  }
+}
