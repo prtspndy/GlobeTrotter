@@ -82,10 +82,12 @@ npm run seed
 - [Database](docs/database.md)
 - [User flow](docs/user-flow.md)
 
-## Links
+## Project links
 
 - [Live application](https://globetrotter1-kappa.vercel.app/)
 - [GitHub repository](https://github.com/prtspndy/GlobeTrotter)
+- [Project documentation](https://drive.google.com/file/d/1YQrrHda01JDDPAFVZqlq8hNoSbCO4XQH/view?usp=sharing)
+- [Project presentation](https://drive.google.com/file/d/1fIUUQwjfTTtcmx2DnytH89_6pMEUyPOk/view?usp=sharing)
 - [Demo video](https://youtu.be/QE_F3dc9Q6M)
 
 ## License
