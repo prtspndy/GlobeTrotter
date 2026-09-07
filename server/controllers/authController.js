@@ -17,12 +17,11 @@ exports.login = asyncHandler(async (req, res) => {
 
 exports.googleLogin = asyncHandler(async (req, res) => {
   const { idToken } = req.body;
-  let payload;
-  try {
-    payload = await verifyGoogleIdToken(idToken);
-  } catch (err) {
-    payload = { email: 'google.user@globetrotter.com', name: 'Google Traveler', sub: 'google-123' };
+  if (!idToken) {
+    return res.status(400).json({ success: false, message: 'Google ID token is required' });
   }
+
+  const payload = await verifyGoogleIdToken(idToken);
 
   let user = await User.findOne({ email: payload.email });
   if (!user) {
