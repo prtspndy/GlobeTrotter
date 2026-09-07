@@ -4,6 +4,10 @@ const connectDB = require('./config/db');
 
 const PORT = process.env.PORT || 5000;
 
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET must be configured before starting the server');
+}
+
 // Connect Database & Start HTTP Server
 connectDB().then(() => {
   app.listen(PORT, () => {

@@ -1,12 +1,16 @@
 {
-  "name": "globetrotter-master-project",
+  "name": "globetrotter",
   "version": "1.0.0",
-  "description": "GlobeTrotter — Personalized Travel Planning Platform (MERN Stack)",
+  "private": true,
+  "description": "Personalized travel planning platform built with React, Express, and MongoDB",
   "scripts": {
+    "install:all": "npm install && npm --prefix client install && npm --prefix server install",
     "client:dev": "npm --prefix client run dev",
     "client:build": "npm --prefix client run build",
+    "client:lint": "npm --prefix client run lint",
     "server:dev": "npm --prefix server run dev",
     "server:start": "npm --prefix server start",
+    "server:test": "npm --prefix server test",
     "seed": "npm --prefix server run seed"
   },
   "keywords": [
@@ -18,5 +22,9 @@
     "node"
   ],
   "author": "GlobeTrotter Team",
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
 }

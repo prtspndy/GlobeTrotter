@@ -7,7 +7,7 @@ const axiosClient = axios.create({
   }
 });
 
-// Request Interceptor to attach Bearer JWT
+// Attach the stored access token to authenticated requests.
 axiosClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('globetrotter_token');
@@ -19,7 +19,6 @@ axiosClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor for standard formatting
 axiosClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
