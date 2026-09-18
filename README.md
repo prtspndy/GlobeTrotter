@@ -4,6 +4,10 @@ GlobeTrotter is a personalized travel-planning platform for creating
 multi-city itineraries, discovering destinations and activities, tracking
 budgets, and sharing trips.
 
+# Link
+
+ https://globetrotter1-kappa.vercel.app/
+
 ## Features
 
 - JWT authentication with optional Google OAuth
