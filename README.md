@@ -4,6 +4,8 @@ GlobeTrotter is a personalized travel-planning platform for creating
 multi-city itineraries, discovering destinations and activities, tracking
 budgets, and sharing trips.
 
+Odoo x LDCE Hackathon Project
+
 # Link
 
  https://globetrotter1-kappa.vercel.app/
