@@ -38,8 +38,8 @@ docs/         Architecture, API, database, and user-flow documentation
 
 ## Requirements
 
-- Node.js 18 or newer
-- npm 9 or newer
+- Node.js 20.19 or newer
+- npm 10 or newer
 - MongoDB (local or hosted)
 
 ## Setup
